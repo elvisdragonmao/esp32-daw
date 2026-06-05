@@ -1,6 +1,6 @@
 # ESP32 WROVER Mini DAW 使用說明書
 
-這是一台以 ESP32 WROVER 製作的 4 軌 step sequencer / mini DAW。它會在 ST7735S 80x160 TFT 上顯示選單與 16-step grid，透過 MAX98357A I2S amplifier 輸出合成音，並使用類比搖桿完成選單操作、參數調整與即時錄音。
+這是一台以 ESP32 WROVER 製作的 4 軌 step sequencer / mini DAW。它會在 ST7735S 80x160 TFT 上顯示選單與可調長度 step grid，透過 MAX98357A I2S amplifier 輸出合成音，並使用類比搖桿完成選單操作、參數調整與即時錄音。
 
 ## 快速開始
 
@@ -62,15 +62,16 @@
 
 主畫面左側會顯示 4 軌與主要功能：
 
-- `1 Sin`
-- `2 Tri`
-- `3 Sqr`
-- `4 Saw`
+- `1` + sine 波形圖示
+- `2` + triangle 波形圖示
+- `3` + square 波形圖示
+- `4` + saw 波形圖示
 - `Play` / `Pause`
 - `Vol`
 - `BPM`
+- `Bars`
 
-右側 grid 是 4 軌、16 step 的 pattern。亮色格代表該 step 有音符。播放時白色框會顯示目前 step。
+右側 grid 是 4 軌 pattern。每小節 4 step，可設定 1 到 8 小節，預設 4 小節也就是 16 step。亮色格代表該 step 有音符。播放時白色框會顯示目前 step。
 
 ## 軌道選單
 
@@ -83,13 +84,15 @@
 | `Vol` | 調整目前軌道音量 |
 | `OSC` | 選擇目前軌道的 oscillator |
 
-## 音量與 BPM
+## 音量、BPM 與小節數
 
 `M Vol` 是 master volume，影響整體輸出音量。
 
 `TnVol` 是單一軌道音量，只影響目前選取的軌道。
 
-`BPM` 會調整 sequencer 速度。每個 step 是一拍，16 steps 是 16 拍循環。
+`BPM` 會調整 sequencer 速度。每個 step 的時間是 `30000 / BPM` ms。
+
+`Bars` 會設定 loop 小節數，範圍是 1 到 8。每小節 4 step，所以 loop 長度會是 4、8、12、16、20、24、28 或 32 step。
 
 ## Oscillator
 
@@ -97,10 +100,11 @@
 
 | 顯示 | 波形 |
 | --- | --- |
-| `Sin` | Sine |
-| `Tri` | Triangle |
-| `Sqr` | Square |
-| `Saw` | Saw |
+| Sine 圖示 | Sine |
+| Triangle 圖示 | Triangle |
+| Square 圖示 | Square |
+| Saw 圖示 | Saw |
+| `Drum` | 4 種 drum 聲音：Kick、Snare、Hat、Tom |
 
 ## 錄音流程
 
@@ -108,9 +112,11 @@
 2. 選擇 `Record` 並向右確認。
 3. 畫面進入 `ARM`，系統會等待 loop 回到 step 1。
 4. 進入 `REC` 後，每個 step 會讀取當下搖桿方向。
-5. 連續錄完 16 steps 後，自動回到軌道選單。
+5. 連續錄完目前 loop 的所有 steps 後，自動回到軌道選單。
 
 錄音時的音符對應：
+
+如果目前軌道選的是 `Drum`，同一組方向會映射成 4 種 drum 聲音：左 / 右下是 Kick，上 / 下是 Snare，右上 / 左下是 Hat，右 / 左上是 Tom。
 
 | 搖桿方向 | 音符 |
 | --- | --- |
@@ -157,7 +163,7 @@
 poster/ui-svg/
 ```
 
-包含 9 張目前 UI 狀態：
+包含 10 張目前 UI 狀態：
 
 - `01-main-stopped.svg`
 - `02-main-playing.svg`
@@ -165,9 +171,10 @@ poster/ui-svg/
 - `04-master-volume.svg`
 - `05-track-volume.svg`
 - `06-bpm.svg`
-- `07-osc-menu.svg`
-- `08-record-armed.svg`
-- `09-recording.svg`
+- `07-bars.svg`
+- `08-osc-menu.svg`
+- `09-record-armed.svg`
+- `10-recording.svg`
 
 重新產生 SVG：
 

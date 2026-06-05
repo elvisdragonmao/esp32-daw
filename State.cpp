@@ -15,6 +15,7 @@ volatile uint8_t previousStep = 15;
 
 volatile uint16_t bpm = 120;
 volatile uint8_t masterVolume = 100;
+volatile uint8_t barCount = DEFAULT_BAR_COUNT;
 
 volatile ScreenMode screenMode = MODE_MAIN;
 
@@ -88,6 +89,23 @@ const char *recordNoteName(OscType osc, int8_t note) {
 
 uint32_t freqToInc(float freq) {
   return (uint32_t)((double)freq * 4294967296.0 / (double)SAMPLE_RATE);
+}
+
+uint8_t activeStepCountNoLock() {
+  uint8_t bars = barCount;
+
+  if (bars < MIN_BAR_COUNT) bars = MIN_BAR_COUNT;
+  if (bars > MAX_BAR_COUNT) bars = MAX_BAR_COUNT;
+
+  return bars * STEPS_PER_BAR;
+}
+
+uint8_t activeStepCount() {
+  portENTER_CRITICAL(&stateMux);
+  uint8_t steps = activeStepCountNoLock();
+  portEXIT_CRITICAL(&stateMux);
+
+  return steps;
 }
 
 void setDirtyFullNoLock() {

@@ -18,6 +18,7 @@ extern volatile uint8_t previousStep;
 
 extern volatile uint16_t bpm;
 extern volatile uint8_t masterVolume;
+extern volatile uint8_t barCount;
 
 extern volatile ScreenMode screenMode;
 
@@ -58,6 +59,8 @@ extern uint16_t COL_RECORD;
 const char *oscName(OscType osc);
 const char *recordNoteName(OscType osc, int8_t note);
 uint32_t freqToInc(float freq);
+uint8_t activeStepCount();
+uint8_t activeStepCountNoLock();
 
 void setDirtyFullNoLock();
 void setDirtyStatusNoLock();

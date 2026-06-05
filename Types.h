@@ -22,6 +22,7 @@ enum ScreenMode : uint8_t {
   MODE_MASTER_VOL,
   MODE_TRACK_VOL,
   MODE_BPM,
+  MODE_BARS,
   MODE_OSC,
   MODE_REC_ARMED,
   MODE_RECORDING

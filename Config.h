@@ -53,10 +53,14 @@
 // ============================================================
 
 #define TRACK_COUNT 4
-#define STEP_COUNT 16
+#define STEPS_PER_BAR 4
+#define MIN_BAR_COUNT 1
+#define DEFAULT_BAR_COUNT 4
+#define MAX_BAR_COUNT 8
+#define STEP_COUNT (MAX_BAR_COUNT * STEPS_PER_BAR)
 
-// 16 steps = 4 bars, one step per beat.
-// stepMs = 60000 / BPM
+// The active loop length is barCount * STEPS_PER_BAR.
+// stepMs = 30000 / BPM
 
 // ============================================================
 // Display layout: 160x80 landscape

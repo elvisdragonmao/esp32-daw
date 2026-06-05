@@ -340,7 +340,7 @@
 <rect x="45" y="26" width="1" height="11" fill="#ff9600"/>
 <rect x="159" y="26" width="1" height="11" fill="#ff9600"/>
 <rect x="45" y="80" width="115" height="24" fill="#04141c"/>
-<text x="47" y="82" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">BPM120 V100 S01</text>
+<text x="47" y="82" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">BPM120 B4 S01</text>
 <text x="47" y="93" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">STOP  T1 MENU</text>
 <rect x="0" y="24" width="160" height="1" fill="#222222"/>
 <rect x="0" y="103" width="160" height="1" fill="#222222"/>

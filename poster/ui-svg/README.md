@@ -13,6 +13,7 @@ Colors represent the intended firmware UI colors without red/blue compensation.
 - `04-master-volume.svg`: Master Volume
 - `05-track-volume.svg`: Track Volume
 - `06-bpm.svg`: BPM
-- `07-osc-menu.svg`: OSC Menu
-- `08-record-armed.svg`: Record Armed
-- `09-recording.svg`: Recording
+- `07-bars.svg`: Bars
+- `08-osc-menu.svg`: OSC Menu
+- `09-record-armed.svg`: Record Armed
+- `10-recording.svg`: Recording

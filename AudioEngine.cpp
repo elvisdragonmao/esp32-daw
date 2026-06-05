@@ -228,16 +228,18 @@ void AudioEngine::task() {
     bool localPlaying;
     bool localReset;
     uint16_t localBpm;
+    uint8_t localStepsInLoop;
 
     portENTER_CRITICAL(&stateMux);
     localPlaying = playing;
     localReset = resetPlayback;
     localBpm = bpm;
+    localStepsInLoop = activeStepCountNoLock();
 
     if (resetPlayback) {
       resetPlayback = false;
-      currentStep = 15;
-      previousStep = 15;
+      currentStep = localStepsInLoop - 1;
+      previousStep = localStepsInLoop - 1;
       setDirtyFullNoLock();
     }
     portEXIT_CRITICAL(&stateMux);
@@ -246,7 +248,7 @@ void AudioEngine::task() {
       samplesToNextStep = 0;
     }
 
-    uint32_t samplesPerStep = ((uint64_t)SAMPLE_RATE * 60) / localBpm;
+    uint32_t samplesPerStep = ((uint64_t)SAMPLE_RATE * 30) / localBpm;
     if (samplesPerStep < 100) samplesPerStep = 100;
 
     for (uint16_t i = 0; i < AUDIO_FRAMES; i++) {

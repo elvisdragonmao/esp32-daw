@@ -27,7 +27,11 @@ STATUS_Y = VIEW_Y + 56
 STATUS_H = 24
 
 TRACK_COUNT = 4
-STEP_COUNT = 16
+STEPS_PER_BAR = 4
+MIN_BAR_COUNT = 1
+DEFAULT_BAR_COUNT = 4
+MAX_BAR_COUNT = 8
+STEP_COUNT = MAX_BAR_COUNT * STEPS_PER_BAR
 
 def screen_color(r, g, b):
     return f"#{r:02x}{g:02x}{b:02x}"
@@ -45,8 +49,9 @@ COL_NOTE = screen_color(80, 210, 240)
 COL_MUTED_NOTE = screen_color(70, 80, 85)
 COL_PLAYHEAD = "#ffffff"
 
-OSC_NAMES = ["Sin", "Tri", "Sqr", "Saw"]
+OSC_NAMES = ["Sin", "Tri", "Sqr", "Saw", "Drum"]
 NOTE_NAMES = ["C", "D", "E", "F", "G", "A", "B", "C+"]
+DRUM_NAMES = ["Kick", "Snare", "Hat", "Tom"]
 
 
 def demo_tracks():
@@ -117,6 +122,12 @@ class Svg:
             f'dominant-baseline="text-before-edge">{escape(str(value))}</text>'
         )
 
+    def line(self, x1, y1, x2, y2, stroke=COL_TEXT):
+        self.items.append(
+            f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" '
+            f'stroke="{stroke}" stroke-width="1" stroke-linecap="square"/>'
+        )
+
     def write(self, path):
         path.write_text(
             "\n".join([
@@ -142,6 +153,74 @@ def draw_menu_item(svg, row, text, selected, muted=False):
     svg.text(2, y + 1, text, fg)
 
 
+def active_step_count(state):
+    bars = max(MIN_BAR_COUNT, min(state["bar_count"], MAX_BAR_COUNT))
+    return bars * STEPS_PER_BAR
+
+
+def grid_cell_width(state):
+    step_count = active_step_count(state)
+    width = (VIEW_W - GRID_X) // step_count
+    return max(3, min(width, 28))
+
+
+def draw_osc_shape(svg, x, y, osc, color=COL_TEXT):
+    if osc == 0:
+        sy = [4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3]
+        for i in range(15):
+            svg.line(x + i * 2, y + sy[i], x + (i + 1) * 2, y + sy[i + 1], color)
+    elif osc == 1:
+        svg.line(x, y + 7, x + 7, y + 1, color)
+        svg.line(x + 7, y + 1, x + 15, y + 7, color)
+        svg.line(x + 15, y + 7, x + 23, y + 1, color)
+        svg.line(x + 23, y + 1, x + 30, y + 7, color)
+    elif osc == 2:
+        points = [
+            (x, y + 7), (x + 6, y + 7), (x + 6, y + 1),
+            (x + 15, y + 1), (x + 15, y + 7), (x + 24, y + 7),
+            (x + 24, y + 1), (x + 30, y + 1),
+        ]
+        for a, b in zip(points, points[1:]):
+            svg.line(a[0], a[1], b[0], b[1], color)
+    elif osc == 3:
+        svg.line(x, y + 7, x + 10, y + 1, color)
+        svg.line(x + 10, y + 1, x + 10, y + 7, color)
+        svg.line(x + 10, y + 7, x + 20, y + 1, color)
+        svg.line(x + 20, y + 1, x + 20, y + 7, color)
+        svg.line(x + 20, y + 7, x + 30, y + 1, color)
+
+
+def draw_osc_menu_item(svg, row, osc, selected):
+    y = VIEW_Y + row * 10
+    bg = COL_SELECT if selected else COL_PANEL
+    svg.rect(0, y, MENU_W, 10, bg)
+    if osc == 4:
+        svg.text(2, y + 1, "Drum")
+    else:
+        draw_osc_shape(svg, 7, y + 1, osc)
+
+
+def draw_track_osc_item(svg, row, track_index, track, selected):
+    y = VIEW_Y + row * 10
+    bg = COL_SELECT if selected else COL_PANEL
+    fg = COL_MUTED_TEXT if track["mute"] else COL_TEXT
+    svg.rect(0, y, MENU_W, 10, bg)
+    svg.text(2, y + 1, track_index + 1, fg)
+
+    if track["osc"] == 4:
+        svg.text(14, y + 1, "Drm", fg)
+    else:
+        draw_osc_shape(svg, 13, y + 1, track["osc"], fg)
+
+
+def record_note_name(osc, note):
+    if note < 0:
+        return "--"
+    if osc == 4:
+        return DRUM_NAMES[note & 0x03]
+    return NOTE_NAMES[note]
+
+
 def draw_left_panel(svg, state):
     svg.rect(VIEW_X, VIEW_Y, MENU_W, VIEW_H, COL_PANEL)
 
@@ -150,12 +229,12 @@ def draw_left_panel(svg, state):
 
     if mode == "main":
         for t in range(TRACK_COUNT):
-            text = f"{t + 1} {OSC_NAMES[tracks[t]['osc']]}"
-            draw_menu_item(svg, t, text, state["main_index"] == t, tracks[t]["mute"])
+            draw_track_osc_item(svg, t, t, tracks[t], state["main_index"] == t)
 
         draw_menu_item(svg, 4, "Pause" if state["playing"] else "Play", state["main_index"] == 4)
         draw_menu_item(svg, 5, "Vol", state["main_index"] == 5)
         draw_menu_item(svg, 6, "BPM", state["main_index"] == 6)
+        draw_menu_item(svg, 7, "Bars", state["main_index"] == 7)
 
     elif mode == "track":
         selected_track = state["selected_track"]
@@ -184,9 +263,15 @@ def draw_left_panel(svg, state):
         draw_menu_item(svg, 3, "Dn -", False)
         draw_menu_item(svg, 6, "L Back", False)
 
+    elif mode == "bars":
+        draw_menu_item(svg, 0, "Bars", True)
+        draw_menu_item(svg, 2, "Up +", False)
+        draw_menu_item(svg, 3, "Dn -", False)
+        draw_menu_item(svg, 6, "L Back", False)
+
     elif mode == "osc":
-        for i, name in enumerate(OSC_NAMES):
-            draw_menu_item(svg, i, name, state["osc_menu_index"] == i)
+        for i, _name in enumerate(OSC_NAMES):
+            draw_osc_menu_item(svg, i, i, state["osc_menu_index"] == i)
         draw_menu_item(svg, 6, f"T{state['selected_track'] + 1}OSC", False)
 
     elif mode == "rec_armed":
@@ -197,12 +282,14 @@ def draw_left_panel(svg, state):
     elif mode == "recording":
         draw_menu_item(svg, 0, "REC", True)
         draw_menu_item(svg, 1, f"T{state['record_track'] + 1}", False)
-        draw_menu_item(svg, 3, f"{state['record_count'] + 1:02d}/16", False)
+        draw_menu_item(svg, 3, f"{state['record_count'] + 1:02d}/{active_step_count(state):02d}", False)
 
 
 def draw_grid_cell(svg, state, t, s):
     tracks = state["tracks"]
-    x = GRID_X + s * CELL_W
+    cell_w = grid_cell_width(state)
+    draw_w = max(2, cell_w - 1)
+    x = GRID_X + s * cell_w
     y = GRID_Y + t * ROW_H
 
     has_note = tracks[t]["steps"][s] >= 0
@@ -215,11 +302,11 @@ def draw_grid_cell(svg, state, t, s):
     else:
         fill = COL_GRID_EMPTY
 
-    svg.rect(x, y, CELL_W - 1, CELL_H, fill)
-    svg.rect(x, y, CELL_W - 1, CELL_H, "none", COL_GRID_BORDER)
+    svg.rect(x, y, draw_w, CELL_H, fill)
+    svg.rect(x, y, draw_w, CELL_H, "none", COL_GRID_BORDER)
 
     if state["playing"] and s == state["current_step"]:
-        svg.rect(x - 1, y - 1, CELL_W + 1, CELL_H + 2, "none", COL_PLAYHEAD)
+        svg.rect(x - 1, y - 1, draw_w + 2, CELL_H + 2, "none", COL_PLAYHEAD)
 
 
 def draw_selected_track_outline(svg, state):
@@ -228,14 +315,17 @@ def draw_selected_track_outline(svg, state):
         return
 
     t = state["record_track"] if mode in {"rec_armed", "recording"} else state["selected_track"]
+    steps = active_step_count(state)
+    cell_w = grid_cell_width(state)
     y = GRID_Y + t * ROW_H
-    svg.rect(GRID_X - 2, y - 2, CELL_W * STEP_COUNT + 3, CELL_H + 4, "none", COL_SELECT)
+    svg.rect(GRID_X - 2, y - 2, cell_w * steps + 3, CELL_H + 4, "none", COL_SELECT)
 
 
 def draw_grid(svg, state):
     svg.rect(GRID_X - 2, VIEW_Y, VIEW_W - GRID_X + 2, STATUS_Y - VIEW_Y - 1, COL_BG)
+    steps = active_step_count(state)
     for t in range(TRACK_COUNT):
-        for s in range(STEP_COUNT):
+        for s in range(steps):
             draw_grid_cell(svg, state, t, s)
     draw_selected_track_outline(svg, state)
 
@@ -272,20 +362,26 @@ def draw_status(svg, state):
         svg.text(GRID_X, STATUS_Y + 13, str(state["bpm"]), COL_SELECT)
         return
 
+    if mode == "bars":
+        svg.text(GRID_X, STATUS_Y + 2, "Bars")
+        svg.text(GRID_X, STATUS_Y + 13, f"{state['bar_count']} / 8", COL_SELECT)
+        return
+
     if mode in {"recording", "rec_armed"}:
         note = state["current_rec_note"]
         if mode == "rec_armed":
             svg.text(GRID_X, STATUS_Y + 2, "ARM: wait loop")
         else:
-            svg.text(GRID_X, STATUS_Y + 2, f"REC T{state['record_track'] + 1} {state['record_count'] + 1:02d}/16")
+            svg.text(GRID_X, STATUS_Y + 2, f"REC T{state['record_track'] + 1} {state['record_count'] + 1:02d}/{active_step_count(state):02d}")
 
         if note >= 0:
-            svg.text(GRID_X, STATUS_Y + 13, f"Note: {NOTE_NAMES[note]}")
+            osc = state["tracks"][state["record_track"]]["osc"]
+            svg.text(GRID_X, STATUS_Y + 13, f"Note: {record_note_name(osc, note)}")
         else:
             svg.text(GRID_X, STATUS_Y + 13, "Note: --")
         return
 
-    svg.text(GRID_X, STATUS_Y + 2, f"BPM{state['bpm']:03d} V{state['master_volume']:03d} S{state['current_step'] + 1:02d}")
+    svg.text(GRID_X, STATUS_Y + 2, f"BPM{state['bpm']:03d} B{state['bar_count']} S{state['current_step'] + 1:02d}")
     prefix = "PLAY" if state["playing"] else "STOP"
     if mode == "main":
         label = "MAIN"
@@ -293,6 +389,8 @@ def draw_status(svg, state):
         label = f"T{state['selected_track'] + 1} MENU"
     elif mode == "osc":
         label = "OSC"
+    elif mode == "bars":
+        label = "BARS"
     else:
         label = ""
     svg.text(GRID_X, STATUS_Y + 13, f"{prefix}  {label}".rstrip())
@@ -315,6 +413,7 @@ def base_state():
         "current_step": 0,
         "bpm": 120,
         "master_volume": 100,
+        "bar_count": DEFAULT_BAR_COUNT,
         "main_index": 0,
         "selected_track": 0,
         "track_menu_index": 0,
@@ -355,12 +454,16 @@ def make_states():
     states.append(("06-bpm.svg", "BPM", s))
 
     s = base_state()
+    s.update({"mode": "bars", "bar_count": 4})
+    states.append(("07-bars.svg", "Bars", s))
+
+    s = base_state()
     s.update({"mode": "osc", "selected_track": 2, "osc_menu_index": 2})
-    states.append(("07-osc-menu.svg", "OSC Menu", s))
+    states.append(("08-osc-menu.svg", "OSC Menu", s))
 
     s = base_state()
     s.update({"mode": "rec_armed", "playing": True, "record_track": 0, "selected_track": 0, "current_step": 12})
-    states.append(("08-record-armed.svg", "Record Armed", s))
+    states.append(("09-record-armed.svg", "Record Armed", s))
 
     s = base_state()
     s.update({
@@ -372,7 +475,7 @@ def make_states():
         "current_rec_note": 4,
         "current_step": 8,
     })
-    states.append(("09-recording.svg", "Recording", s))
+    states.append(("10-recording.svg", "Recording", s))
 
     return states
 
@@ -380,6 +483,9 @@ def make_states():
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     manifest = []
+
+    for old_svg in OUT_DIR.glob("*.svg"):
+        old_svg.unlink()
 
     for filename, title, state in make_states():
         path = OUT_DIR / filename

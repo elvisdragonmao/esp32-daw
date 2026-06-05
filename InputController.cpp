@@ -13,12 +13,12 @@ void InputController::handleDirEvent(Dir4 dir) {
 
   if (mode == MODE_MAIN) {
     if (dir == DIR_UP) {
-      mainIndex = (mainIndex == 0) ? 6 : mainIndex - 1;
+      mainIndex = (mainIndex == 0) ? 7 : mainIndex - 1;
       setDirtyMenuNoLock();
     }
 
     else if (dir == DIR_DOWN) {
-      mainIndex = (mainIndex + 1) % 7;
+      mainIndex = (mainIndex + 1) % 8;
       setDirtyMenuNoLock();
     }
 
@@ -48,6 +48,11 @@ void InputController::handleDirEvent(Dir4 dir) {
 
       else if (mainIndex == 6) {
         screenMode = MODE_BPM;
+        setDirtyFullNoLock();
+      }
+
+      else if (mainIndex == 7) {
+        screenMode = MODE_BARS;
         setDirtyFullNoLock();
       }
     }
@@ -145,6 +150,29 @@ void InputController::handleDirEvent(Dir4 dir) {
     else if (dir == DIR_DOWN) {
       bpm = clampInt(bpm - 5, 40, 240);
       setDirtyStatusNoLock();
+    }
+
+    else if (dir == DIR_LEFT || dir == DIR_RIGHT) {
+      screenMode = MODE_MAIN;
+      setDirtyFullNoLock();
+    }
+  }
+
+  else if (mode == MODE_BARS) {
+    if (dir == DIR_UP) {
+      barCount = clampInt(barCount + 1, MIN_BAR_COUNT, MAX_BAR_COUNT);
+      if (currentStep >= activeStepCountNoLock()) {
+        resetPlayback = true;
+      }
+      setDirtyFullNoLock();
+    }
+
+    else if (dir == DIR_DOWN) {
+      barCount = clampInt(barCount - 1, MIN_BAR_COUNT, MAX_BAR_COUNT);
+      if (currentStep >= activeStepCountNoLock()) {
+        resetPlayback = true;
+      }
+      setDirtyFullNoLock();
     }
 
     else if (dir == DIR_LEFT || dir == DIR_RIGHT) {

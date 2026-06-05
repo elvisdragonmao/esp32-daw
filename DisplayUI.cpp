@@ -61,6 +61,18 @@ void DisplayUI::begin() {
   tft.setTextWrap(false);
 }
 
+uint8_t DisplayUI::gridStepCount() {
+  return activeStepCount();
+}
+
+uint8_t DisplayUI::gridCellWidth(uint8_t stepCount) {
+  uint8_t w = (VIEW_W - GRID_X) / stepCount;
+
+  if (w < 3) return 3;
+  if (w > 28) return 28;
+  return w;
+}
+
 void DisplayUI::drawOscShape(int x, int y, OscType osc, uint16_t color) {
   switch (osc) {
     case OSC_SINE:
@@ -166,6 +178,7 @@ void DisplayUI::drawLeftPanel() {
     drawMenuItem(4, playing ? "Pause" : "Play", mainIndex == 4);
     drawMenuItem(5, "Vol", mainIndex == 5);
     drawMenuItem(6, "BPM", mainIndex == 6);
+    drawMenuItem(7, "Bars", mainIndex == 7);
   }
 
   else if (mode == MODE_TRACK) {
@@ -203,6 +216,13 @@ void DisplayUI::drawLeftPanel() {
     drawMenuItem(6, "L Back", false);
   }
 
+  else if (mode == MODE_BARS) {
+    drawMenuItem(0, "Bars", true);
+    drawMenuItem(2, "Up +", false);
+    drawMenuItem(3, "Dn -", false);
+    drawMenuItem(6, "L Back", false);
+  }
+
   else if (mode == MODE_OSC) {
     drawOscMenuItem(0, OSC_SINE, oscMenuIndex == OSC_SINE);
     drawOscMenuItem(1, OSC_TRIANGLE, oscMenuIndex == OSC_TRIANGLE);
@@ -229,7 +249,7 @@ void DisplayUI::drawLeftPanel() {
     snprintf(buf, sizeof(buf), "T%d", recordTrack + 1);
     drawMenuItem(1, buf, false);
 
-    snprintf(buf, sizeof(buf), "%02d/16", recordCount + 1);
+    snprintf(buf, sizeof(buf), "%02d/%02d", recordCount + 1, activeStepCount());
     drawMenuItem(3, buf, false);
   }
 }
@@ -237,7 +257,11 @@ void DisplayUI::drawLeftPanel() {
 void DisplayUI::drawGridCell(uint8_t t, uint8_t s) {
   if (t >= TRACK_COUNT || s >= STEP_COUNT) return;
 
-  int x = GRID_X + s * CELL_W;
+  uint8_t steps = gridStepCount();
+  if (s >= steps) return;
+
+  uint8_t cellW = gridCellWidth(steps);
+  int x = GRID_X + s * cellW;
   int y = GRID_Y + t * ROW_H;
 
   bool hasNote = tracks[t].steps[s].note >= 0;
@@ -253,11 +277,14 @@ void DisplayUI::drawGridCell(uint8_t t, uint8_t s) {
     fillColor = COL_GRID_EMPTY;
   }
 
-  tft.fillRect(x, y, CELL_W - 1, CELL_H, fillColor);
-  tft.drawRect(x, y, CELL_W - 1, CELL_H, COL_GRID_BORDER);
+  int drawW = cellW - 1;
+  if (drawW < 2) drawW = 2;
+
+  tft.fillRect(x, y, drawW, CELL_H, fillColor);
+  tft.drawRect(x, y, drawW, CELL_H, COL_GRID_BORDER);
 
   if (playing && s == currentStep) {
-    tft.drawRect(x - 1, y - 1, CELL_W + 1, CELL_H + 2, COL_PLAYHEAD);
+    tft.drawRect(x - 1, y - 1, drawW + 2, CELL_H + 2, COL_PLAYHEAD);
   }
 }
 
@@ -272,8 +299,10 @@ void DisplayUI::drawSelectedTrackOutline() {
       t = recordTrack;
     }
 
+    uint8_t steps = gridStepCount();
+    uint8_t cellW = gridCellWidth(steps);
     int y = GRID_Y + t * ROW_H;
-    tft.drawRect(GRID_X - 2, y - 2, CELL_W * STEP_COUNT + 3, CELL_H + 4, COL_SELECT);
+    tft.drawRect(GRID_X - 2, y - 2, cellW * steps + 3, CELL_H + 4, COL_SELECT);
   }
 }
 
@@ -281,7 +310,9 @@ void DisplayUI::drawGrid() {
   tft.fillRect(GRID_X - 2, VIEW_Y, VIEW_W - GRID_X + 2, STATUS_Y - VIEW_Y - 1, COL_BG);
 
   for (uint8_t t = 0; t < TRACK_COUNT; t++) {
-    for (uint8_t s = 0; s < STEP_COUNT; s++) {
+    uint8_t steps = gridStepCount();
+
+    for (uint8_t s = 0; s < steps; s++) {
       drawGridCell(t, s);
     }
   }
@@ -290,6 +321,8 @@ void DisplayUI::drawGrid() {
 }
 
 void DisplayUI::drawStepColumn(uint8_t s) {
+  if (s >= gridStepCount()) return;
+
   for (uint8_t t = 0; t < TRACK_COUNT; t++) {
     drawGridCell(t, s);
   }
@@ -352,6 +385,17 @@ void DisplayUI::drawStatus() {
     return;
   }
 
+  if (mode == MODE_BARS) {
+    tft.setCursor(GRID_X, STATUS_Y + 2);
+    tft.print("Bars");
+
+    tft.setCursor(GRID_X, STATUS_Y + 13);
+    tft.setTextColor(COL_SELECT, COL_PANEL_DARK);
+    tft.print(barCount);
+    tft.print(" / 8");
+    return;
+  }
+
   if (mode == MODE_RECORDING || mode == MODE_REC_ARMED) {
     int8_t n = currentRecNote;
 
@@ -360,7 +404,7 @@ void DisplayUI::drawStatus() {
     if (mode == MODE_REC_ARMED) {
       tft.print("ARM: wait loop");
     } else {
-      snprintf(buf, sizeof(buf), "REC T%d %02d/16", recordTrack + 1, recordCount + 1);
+      snprintf(buf, sizeof(buf), "REC T%d %02d/%02d", recordTrack + 1, recordCount + 1, activeStepCount());
       tft.print(buf);
     }
 
@@ -377,7 +421,7 @@ void DisplayUI::drawStatus() {
   }
 
   tft.setCursor(GRID_X, STATUS_Y + 2);
-  snprintf(buf, sizeof(buf), "BPM%03d V%03d S%02d", bpm, masterVolume, currentStep + 1);
+  snprintf(buf, sizeof(buf), "BPM%03d B%d S%02d", bpm, barCount, currentStep + 1);
   tft.print(buf);
 
   tft.setCursor(GRID_X, STATUS_Y + 13);
@@ -397,6 +441,8 @@ void DisplayUI::drawStatus() {
     tft.print(buf);
   } else if (mode == MODE_OSC) {
     tft.print("OSC");
+  } else if (mode == MODE_BARS) {
+    tft.print("BARS");
   }
 }
 

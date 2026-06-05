@@ -21,8 +21,10 @@ void Sequencer::advanceFromAudio(uint32_t samplesPerStep) {
 
   portENTER_CRITICAL(&stateMux);
 
+  uint8_t stepsInLoop = activeStepCountNoLock();
+
   oldStep = currentStep;
-  currentStep = (currentStep + 1) & 0x0F;
+  currentStep = (currentStep + 1) % stepsInLoop;
   newStep = currentStep;
   previousStep = oldStep;
 
@@ -54,7 +56,7 @@ void Sequencer::advanceFromAudio(uint32_t samplesPerStep) {
 
     recordCount++;
 
-    if (recordCount >= STEP_COUNT) {
+    if (recordCount >= stepsInLoop) {
       screenMode = MODE_TRACK;
       trackMenuIndex = 1;
       recordCount = 0;

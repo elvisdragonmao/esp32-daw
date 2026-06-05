@@ -5,19 +5,52 @@
 <rect x="0" y="24" width="160" height="80" fill="#000000"/>
 <rect x="0" y="24" width="44" height="80" fill="#08232d"/>
 <rect x="0" y="24" width="44" height="10" fill="#08232d"/>
-<text x="2" y="25" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">1 Sin</text>
+<text x="2" y="25" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">1</text>
+<line x1="13" y1="29" x2="15" y2="28" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="15" y1="28" x2="17" y2="27" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="17" y1="27" x2="19" y2="26" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="19" y1="26" x2="21" y2="26" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="21" y1="26" x2="23" y2="27" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="23" y1="27" x2="25" y2="28" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="25" y1="28" x2="27" y2="29" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="27" y1="29" x2="29" y2="30" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="29" y1="30" x2="31" y2="31" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="31" y1="31" x2="33" y2="32" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="33" y1="32" x2="35" y2="32" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="35" y1="32" x2="37" y2="31" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="37" y1="31" x2="39" y2="30" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="39" y1="30" x2="41" y2="29" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="41" y1="29" x2="43" y2="28" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
 <rect x="0" y="34" width="44" height="10" fill="#08232d"/>
-<text x="2" y="35" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">2 Tri</text>
+<text x="2" y="35" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">2</text>
+<line x1="13" y1="42" x2="20" y2="36" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="20" y1="36" x2="28" y2="42" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="28" y1="42" x2="36" y2="36" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="36" y1="36" x2="43" y2="42" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
 <rect x="0" y="44" width="44" height="10" fill="#08232d"/>
-<text x="2" y="45" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">3 Sqr</text>
+<text x="2" y="45" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">3</text>
+<line x1="13" y1="52" x2="19" y2="52" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="19" y1="52" x2="19" y2="46" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="19" y1="46" x2="28" y2="46" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="28" y1="46" x2="28" y2="52" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="28" y1="52" x2="37" y2="52" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="37" y1="52" x2="37" y2="46" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="37" y1="46" x2="43" y2="46" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
 <rect x="0" y="54" width="44" height="10" fill="#08232d"/>
-<text x="2" y="55" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">4 Saw</text>
+<text x="2" y="55" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">4</text>
+<line x1="13" y1="62" x2="23" y2="56" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="23" y1="56" x2="23" y2="62" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="23" y1="62" x2="33" y2="56" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="33" y1="56" x2="33" y2="62" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
+<line x1="33" y1="62" x2="43" y2="56" stroke="#dcf5ff" stroke-width="1" stroke-linecap="square"/>
 <rect x="0" y="64" width="44" height="10" fill="#ff9600"/>
 <text x="2" y="65" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">Pause</text>
 <rect x="0" y="74" width="44" height="10" fill="#08232d"/>
 <text x="2" y="75" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">Vol</text>
 <rect x="0" y="84" width="44" height="10" fill="#08232d"/>
 <text x="2" y="85" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">BPM</text>
+<rect x="0" y="94" width="44" height="10" fill="#08232d"/>
+<text x="2" y="95" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">Bars</text>
 <rect x="45" y="24" width="115" height="55" fill="#000000"/>
 <rect x="47" y="27" width="6" height="9" fill="#50d2f0"/>
 <rect x="47" y="27" width="6" height="1" fill="#4696aa"/>
@@ -356,7 +389,7 @@
 <rect x="152" y="67" width="1" height="7" fill="#4696aa"/>
 <rect x="157" y="67" width="1" height="7" fill="#4696aa"/>
 <rect x="45" y="80" width="115" height="24" fill="#04141c"/>
-<text x="47" y="82" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">BPM120 V100 S05</text>
+<text x="47" y="82" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">BPM120 B4 S05</text>
 <text x="47" y="93" fill="#dcf5ff" font-size="7" font-family="Courier New, Menlo, monospace" dominant-baseline="text-before-edge">PLAY  MAIN</text>
 <rect x="0" y="24" width="160" height="1" fill="#222222"/>
 <rect x="0" y="103" width="160" height="1" fill="#222222"/>
