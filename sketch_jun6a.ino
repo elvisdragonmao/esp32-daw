@@ -2,9 +2,7 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7735.h>
-#include <driver/i2s.h>
-#include <esp_intr_alloc.h>
-#include <esp_idf_version.h>
+#include <ESP_I2S.h>
 #include <math.h>
 
 // ============================================================
@@ -13,7 +11,7 @@
 
 // ST7735S 80x160 TFT
 #define PIN_TFT_CS 27
-#define PIN_TFT_DC 17  // LCD Á¨¨ 8 ËÖ≥ÔºöÂÅáË®≠ÊòØ DC / A0 / RS
+#define PIN_TFT_DC 17  // LCD Á¨? 8 ??≥Ô?????Ë®≠Ê?? DC / A0 / RS
 #define PIN_TFT_RST 16
 #define PIN_TFT_MOSI 23  // LCD SDA
 #define PIN_TFT_SCLK 18  // LCD SCL
@@ -29,7 +27,7 @@
 #define PIN_JOY_Y 35
 #define PIN_JOY_SW 32
 
-// Â∏∏Ë¶ã joystick Ê®°ÁµÑÔºöÂæÄ‰∏äÊôÇ Y ÊúÉËÆäÂ∞èÔºåÊâÄ‰ª•È†êË®≠ÂèçËΩâ Y
+// Â∏∏Ë?? joystick Ê®°Á??Ôº?Âæ?‰∏???? Y ???ËÆ?Â∞?Ôº????‰ª•È??Ë®≠Â??ËΩ? Y
 #define JOY_INVERT_X false
 #define JOY_INVERT_Y true
 
@@ -39,7 +37,6 @@
 
 #define SAMPLE_RATE 22050
 #define AUDIO_FRAMES 128
-#define I2S_PORT I2S_NUM_0
 
 // ============================================================
 // Sequencer settings
@@ -48,29 +45,41 @@
 #define TRACK_COUNT 4
 #define STEP_COUNT 16
 
-// 16 steps = ÂõõÂ∞èÁØÄÔºåÊØè step = ‰∏ÄÊãç
+// 16 steps = ???Â∞?ÁØ?Ôº?ÊØ? step = ‰∏????
 // stepMs = 60000 / BPM
 
 // ============================================================
 // Display layout: 160x80 landscape
 // ============================================================
 
-#define SCREEN_W 160
-#define SCREEN_H 80
+#define SCREEN_W             160
+#define SCREEN_H             80
 
-#define MENU_W 44
-#define GRID_X 47
-#define GRID_Y 3
-#define CELL_W 7
-#define CELL_H 9
-#define ROW_H 13
-#define STATUS_Y 56
+// ßA™∫ ST7735 BLACKTAB πÍª⁄•iµ¯∞œ¨O y = 24 ~ 103
+#define VIEW_X               0
+#define VIEW_Y               24
+#define VIEW_W               160
+#define VIEW_H               80
+
+#define MENU_W               44
+
+#define GRID_X               (VIEW_X + 47)
+#define GRID_Y               (VIEW_Y + 3)
+
+#define CELL_W               7
+#define CELL_H               9
+#define ROW_H                13
+
+#define STATUS_Y             (VIEW_Y + 56)
+#define STATUS_H             24
 
 // ============================================================
 // Objects
 // ============================================================
 
 Adafruit_ST7735 tft = Adafruit_ST7735(PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST);
+
+I2SClass I2S;
 
 portMUX_TYPE stateMux = portMUX_INITIALIZER_UNLOCKED;
 
@@ -278,8 +287,8 @@ void initTracks() {
     voices[t].gateSamples = 0;
   }
 
-  // Demo patternÔºåÊñπ‰æø‰Ω†‰∏ÄÈñãÊ©üÂ∞±ËÉΩËÅΩÂà∞ËÅ≤Èü≥„ÄÇ
-  // ‰∏çÊÉ≥Ë¶Å demo pattern ÁöÑË©±ÔºåÊääÈÄôÊÆµÂà™ÊéâÂç≥ÂèØ„ÄÇ
+  // Demo patternÔº???π‰æø‰Ω?‰∏????Ê©?Â∞±Ë?ΩË?ΩÂ?∞Ë?≤È?≥„??
+  // ‰∏???≥Ë?? demo pattern ???Ë©±Ô????????ÊÆµÂ?™Ê????≥Â?Ø„??
   tracks[0].steps[0].note = 0;
   tracks[0].steps[4].note = 2;
   tracks[0].steps[8].note = 4;
@@ -357,28 +366,28 @@ int8_t readRecordNote8() {
 
   if (!left && !right && !up && !down) return -1;
 
-  // Â∑¶‰∏äÔºöÈ´ò C
+  // Â∑¶‰??Ôº?È´? C
   if (left && up) return 7;
 
-  // ‰∏äÔºöD
+  // ‰∏?Ôº?D
   if (up && !left && !right) return 1;
 
-  // Âè≥‰∏äÔºöE
+  // ??≥‰??Ôº?E
   if (right && up) return 2;
 
-  // Âè≥ÔºöF
+  // ??≥Ô??F
   if (right && !up && !down) return 3;
 
-  // Âè≥‰∏ãÔºöG
+  // ??≥‰??Ôº?G
   if (right && down) return 4;
 
-  // ‰∏ãÔºöA
+  // ‰∏?Ôº?A
   if (down && !left && !right) return 5;
 
-  // Â∑¶‰∏ãÔºöB
+  // Â∑¶‰??Ôº?B
   if (left && down) return 6;
 
-  // Â∑¶Ôºö‰Ωé C
+  // Â∑¶Ô??‰Ω? C
   if (left && !up && !down) return 0;
 
   return -1;
@@ -392,44 +401,27 @@ void setupI2S() {
   pinMode(PIN_I2S_SD, OUTPUT);
   digitalWrite(PIN_I2S_SD, HIGH);
 
-  i2s_config_t config = {};
-  config.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX);
-  config.sample_rate = SAMPLE_RATE;
-  config.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
-  config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
-  config.communication_format = I2S_COMM_FORMAT_STAND_I2S;
-  config.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1;
-  config.dma_buf_count = 8;
-  config.dma_buf_len = AUDIO_FRAMES;
-  config.use_apll = false;
-  config.tx_desc_auto_clear = true;
-  config.fixed_mclk = 0;
+  // BCLK, WS/LRC, DOUT, DIN, MCLK
+  // DIN ??? MCLK ‰∏???®Ô?????‰ª•Â°´ -1
+  I2S.setPins(
+    PIN_I2S_BCLK,
+    PIN_I2S_LRC,
+    PIN_I2S_DOUT,
+    -1,
+    -1);
 
-  i2s_pin_config_t pinConfig = {};
-  pinConfig.bck_io_num = PIN_I2S_BCLK;
-  pinConfig.ws_io_num = PIN_I2S_LRC;
-  pinConfig.data_out_num = PIN_I2S_DOUT;
-  pinConfig.data_in_num = I2S_PIN_NO_CHANGE;
+  bool ok = I2S.begin(
+    I2S_MODE_STD,
+    SAMPLE_RATE,
+    I2S_DATA_BIT_WIDTH_16BIT,
+    I2S_SLOT_MODE_STEREO);
 
-  esp_err_t err;
-
-  err = i2s_driver_install(I2S_PORT, &config, 0, NULL);
-  if (err != ESP_OK) {
-    Serial.printf("i2s_driver_install failed: %d\n", err);
+  if (!ok) {
+    Serial.println("I2S begin failed");
     while (true) {
       delay(1000);
     }
   }
-
-  err = i2s_set_pin(I2S_PORT, &pinConfig);
-  if (err != ESP_OK) {
-    Serial.printf("i2s_set_pin failed: %d\n", err);
-    while (true) {
-      delay(1000);
-    }
-  }
-
-  i2s_zero_dma_buffer(I2S_PORT);
 
   Serial.println("I2S OK");
 }
@@ -540,7 +532,7 @@ int16_t renderAudioSample() {
 
   mix = (mix * localMaster) / 127;
 
-  // 4 ËªåÊ∑∑Èü≥È†êÁïô headroomÔºåÈÅøÂÖçÁàÜÈü≥
+  // 4 Ëª?Ê∑∑È?≥È????? headroomÔº???øÂ????????
   mix /= 4;
 
   if (mix > 32767) mix = 32767;
@@ -578,7 +570,7 @@ void advanceStepFromAudio(uint32_t samplesPerStep) {
     setDirtyFullNoLock();
   }
 
-  // Record armedÔºöÁ≠â loop ÂõûÂà∞ step 0 ÊâçÈñãÂßãÈåÑ
+  // Record armedÔº?Á≠? loop ?????? step 0 ??????Âß????
   if (screenMode == MODE_REC_ARMED && newStep == 0) {
     screenMode = MODE_RECORDING;
     recordCount = 0;
@@ -586,7 +578,7 @@ void advanceStepFromAudio(uint32_t samplesPerStep) {
     setDirtyFullNoLock();
   }
 
-  // RecordingÔºöÊØèÂÄã step ËÆÄ‰∏ÄÊ¨°ÁõÆÂâç joystick ÊñπÂêë
+  // RecordingÔº?ÊØ???? step ËÆ?‰∏?Ê¨°Á?ÆÂ?? joystick ??πÂ??
   if (screenMode == MODE_RECORDING) {
     int8_t n = currentRecNote;
 
@@ -662,13 +654,17 @@ void audioTask(void *param) {
 
       int16_t s = renderAudioSample();
 
-      // stereo frame: L/R ÈÉΩËº∏Âá∫‰∏ÄÊ®£ÁöÑËÅ≤Èü≥
+      // stereo frame: L/R ??ΩËº∏??∫‰??Ê®??????≤È??
       audioBuffer[i * 2] = s;
       audioBuffer[i * 2 + 1] = s;
     }
 
-    size_t bytesWritten = 0;
-    i2s_write(I2S_PORT, audioBuffer, sizeof(audioBuffer), &bytesWritten, portMAX_DELAY);
+    size_t bytesWritten = I2S.write((uint8_t *)audioBuffer, sizeof(audioBuffer));
+
+    if (bytesWritten == 0) {
+      taskYIELD();
+    }
+
     taskYIELD();
   }
 }
@@ -678,7 +674,7 @@ void audioTask(void *param) {
 // ============================================================
 
 void drawMenuItem(uint8_t row, const char *text, bool selected, bool muted = false) {
-  int y = row * 10;
+  int y = VIEW_Y + row * 10;
 
   uint16_t bg = selected ? COL_SELECT : COL_PANEL;
   uint16_t fg = muted ? COL_MUTED_TEXT : COL_TEXT;
@@ -691,7 +687,7 @@ void drawMenuItem(uint8_t row, const char *text, bool selected, bool muted = fal
 }
 
 void drawLeftPanel() {
-  tft.fillRect(0, 0, MENU_W, SCREEN_H, COL_PANEL);
+  tft.fillRect(VIEW_X, VIEW_Y, MENU_W, VIEW_H, COL_PANEL);
 
   ScreenMode mode = screenMode;
 
@@ -817,7 +813,7 @@ void drawSelectedTrackOutline() {
 }
 
 void drawGrid() {
-  tft.fillRect(GRID_X - 2, 0, SCREEN_W - GRID_X + 2, 54, COL_BG);
+  tft.fillRect(GRID_X - 2, VIEW_Y, VIEW_W - GRID_X + 2, STATUS_Y - VIEW_Y - 1, COL_BG);
 
   for (uint8_t t = 0; t < TRACK_COUNT; t++) {
     for (uint8_t s = 0; s < STEP_COUNT; s++) {
@@ -849,7 +845,7 @@ void drawBar(int x, int y, int w, int h, int value, int maxValue) {
 }
 
 void drawStatus() {
-  tft.fillRect(GRID_X - 2, STATUS_Y, SCREEN_W - GRID_X + 2, SCREEN_H - STATUS_Y, COL_PANEL_DARK);
+  tft.fillRect(GRID_X - 2, STATUS_Y, VIEW_W - GRID_X + 2, STATUS_H, COL_PANEL_DARK);
 
   tft.setTextSize(1);
   tft.setTextColor(COL_TEXT, COL_PANEL_DARK);
@@ -1202,7 +1198,7 @@ void handleDirEvent(Dir4 dir) {
     }
   }
 
-  // REC_ARMED / RECORDING ÁãÄÊÖã‰∏ãÔºåÊñπÂêëÈçµÊãø‰æÜËº∏ÂÖ•Èü≥Á¨¶Ôºå‰∏çÂÅöÈÅ∏ÂñÆÊìç‰Ωú„ÄÇ
+  // REC_ARMED / RECORDING ??????‰∏?Ôº???πÂ????µÊ?ø‰??Ëº∏Â?•È?≥Á¨¶Ôº?‰∏??????∏Â?ÆÊ??‰Ω????
 
   portEXIT_CRITICAL(&stateMux);
 }
@@ -1292,21 +1288,21 @@ void setup() {
   SPI.begin(PIN_TFT_SCLK, -1, PIN_TFT_MOSI, PIN_TFT_CS);
 
   Serial.println("BOOT 5 TFT init");
-  tft.initR(INITR_MINI160x80);
+  tft.initR(INITR_BLACKTAB);
   tft.setRotation(1);
 
-  COL_BG          = ST77XX_BLACK;
-  COL_PANEL       = tft.color565(8, 35, 45);
-  COL_PANEL_DARK  = tft.color565(4, 20, 28);
-  COL_TEXT        = tft.color565(220, 245, 255);
-  COL_MUTED_TEXT  = tft.color565(120, 140, 145);
-  COL_SELECT      = tft.color565(255, 150, 0);
-  COL_GRID_EMPTY  = tft.color565(25, 90, 115);
+  COL_BG = ST77XX_BLACK;
+  COL_PANEL = tft.color565(8, 35, 45);
+  COL_PANEL_DARK = tft.color565(4, 20, 28);
+  COL_TEXT = tft.color565(220, 245, 255);
+  COL_MUTED_TEXT = tft.color565(120, 140, 145);
+  COL_SELECT = tft.color565(255, 150, 0);
+  COL_GRID_EMPTY = tft.color565(25, 90, 115);
   COL_GRID_BORDER = tft.color565(70, 150, 170);
-  COL_NOTE        = tft.color565(80, 210, 240);
-  COL_MUTED_NOTE  = tft.color565(70, 80, 85);
-  COL_PLAYHEAD    = ST77XX_WHITE;
-  COL_RECORD      = ST77XX_RED;
+  COL_NOTE = tft.color565(80, 210, 240);
+  COL_MUTED_NOTE = tft.color565(70, 80, 85);
+  COL_PLAYHEAD = ST77XX_WHITE;
+  COL_RECORD = ST77XX_RED;
 
   tft.fillScreen(COL_BG);
   tft.setTextWrap(false);
@@ -1318,7 +1314,7 @@ void setup() {
 
   xTaskCreatePinnedToCore(audioTask, "audioTask", 8192, NULL, 3, NULL, 1);
   xTaskCreatePinnedToCore(inputTask, "inputTask", 4096, NULL, 2, NULL, 0);
-  xTaskCreatePinnedToCore(uiTask,    "uiTask",    8192, NULL, 1, NULL, 0);
+  xTaskCreatePinnedToCore(uiTask, "uiTask", 8192, NULL, 1, NULL, 0);
 
   Serial.println("BOOT DONE");
 }
