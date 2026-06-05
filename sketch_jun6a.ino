@@ -31,6 +31,15 @@
 #define JOY_INVERT_X false
 #define JOY_INVERT_Y true
 
+// Joystick anti-noise tuning
+#define JOY_ANALOG_SAMPLES 4
+#define JOY_FILTER_WEIGHT 4
+#define JOY_NAV_DEAD 950
+#define JOY_RECORD_DEAD 950
+#define JOY_AXIS_MARGIN 120
+#define JOY_DIR_STABLE_MS 45
+#define JOY_REC_STABLE_MS 40
+
 // ============================================================
 // Audio settings
 // ============================================================
@@ -172,6 +181,8 @@ volatile bool dirtyCell[TRACK_COUNT][STEP_COUNT];
 // Joystick calibration
 int joyCenterX = 2048;
 int joyCenterY = 2048;
+int joyFilteredX = 2048;
+int joyFilteredY = 2048;
 
 // Sine table
 int16_t sineTable[256];
@@ -326,11 +337,29 @@ void calibrateJoystick() {
 
   joyCenterX = sx / 100;
   joyCenterY = sy / 100;
+  joyFilteredX = joyCenterX;
+  joyFilteredY = joyCenterY;
+}
+
+int readJoystickPinAverage(uint8_t pin) {
+  long sum = 0;
+
+  for (int i = 0; i < JOY_ANALOG_SAMPLES; i++) {
+    sum += analogRead(pin);
+  }
+
+  return sum / JOY_ANALOG_SAMPLES;
 }
 
 void readJoystickDelta(int &dx, int &dy) {
-  dx = analogRead(PIN_JOY_X) - joyCenterX;
-  dy = analogRead(PIN_JOY_Y) - joyCenterY;
+  int rawX = readJoystickPinAverage(PIN_JOY_X);
+  int rawY = readJoystickPinAverage(PIN_JOY_Y);
+
+  joyFilteredX = ((joyFilteredX * (JOY_FILTER_WEIGHT - 1)) + rawX) / JOY_FILTER_WEIGHT;
+  joyFilteredY = ((joyFilteredY * (JOY_FILTER_WEIGHT - 1)) + rawY) / JOY_FILTER_WEIGHT;
+
+  dx = joyFilteredX - joyCenterX;
+  dy = joyFilteredY - joyCenterY;
 
   if (JOY_INVERT_X) dx = -dx;
   if (JOY_INVERT_Y) dy = -dy;
@@ -340,29 +369,32 @@ Dir4 readDir4() {
   int dx, dy;
   readJoystickDelta(dx, dy);
 
-  const int DEAD = 650;
+  int ax = abs(dx);
+  int ay = abs(dy);
 
-  if (abs(dx) < DEAD && abs(dy) < DEAD) {
+  if (ax < JOY_NAV_DEAD && ay < JOY_NAV_DEAD) {
     return DIR_CENTER;
   }
 
-  if (abs(dx) > abs(dy)) {
+  if (ax >= JOY_NAV_DEAD && ax > ay + JOY_AXIS_MARGIN) {
     return dx > 0 ? DIR_RIGHT : DIR_LEFT;
-  } else {
+  }
+
+  if (ay >= JOY_NAV_DEAD && ay > ax + JOY_AXIS_MARGIN) {
     return dy > 0 ? DIR_UP : DIR_DOWN;
   }
+
+  return DIR_CENTER;
 }
 
 int8_t readRecordNote8() {
   int dx, dy;
   readJoystickDelta(dx, dy);
 
-  const int TH = 650;
-
-  bool left = dx < -TH;
-  bool right = dx > TH;
-  bool up = dy > TH;
-  bool down = dy < -TH;
+  bool left = dx < -JOY_RECORD_DEAD;
+  bool right = dx > JOY_RECORD_DEAD;
+  bool up = dy > JOY_RECORD_DEAD;
+  bool down = dy < -JOY_RECORD_DEAD;
 
   if (!left && !right && !up && !down) return -1;
 
@@ -1197,41 +1229,73 @@ void handleDirEvent(Dir4 dir) {
 
 void inputTask(void *param) {
   Dir4 heldDir = DIR_CENTER;
+  Dir4 pendingDir = DIR_CENTER;
   uint32_t holdStartMs = 0;
   uint32_t lastRepeatMs = 0;
+  uint32_t pendingStartMs = 0;
+
+  int8_t stableRecNote = -1;
+  int8_t pendingRecNote = -1;
+  uint32_t recPendingStartMs = 0;
 
   while (true) {
     ScreenMode mode = screenMode;
 
     if (mode == MODE_REC_ARMED || mode == MODE_RECORDING) {
-      int8_t n = readRecordNote8();
+      int8_t rawNote = readRecordNote8();
+      uint32_t now = millis();
 
-      portENTER_CRITICAL(&stateMux);
-      currentRecNote = n;
-      setDirtyStatusNoLock();
-      portEXIT_CRITICAL(&stateMux);
+      if (rawNote != pendingRecNote) {
+        pendingRecNote = rawNote;
+        recPendingStartMs = now;
+      }
+
+      if (now - recPendingStartMs >= JOY_REC_STABLE_MS && rawNote != stableRecNote) {
+        stableRecNote = rawNote;
+
+        portENTER_CRITICAL(&stateMux);
+        currentRecNote = stableRecNote;
+        setDirtyStatusNoLock();
+        portEXIT_CRITICAL(&stateMux);
+      }
 
       vTaskDelay(20 / portTICK_PERIOD_MS);
       continue;
     }
+
+    stableRecNote = -1;
+    pendingRecNote = -1;
+    recPendingStartMs = 0;
 
     Dir4 dir = readDir4();
     uint32_t now = millis();
 
     if (dir == DIR_CENTER) {
       heldDir = DIR_CENTER;
+      pendingDir = DIR_CENTER;
       holdStartMs = 0;
       lastRepeatMs = 0;
+      pendingStartMs = 0;
       vTaskDelay(15 / portTICK_PERIOD_MS);
       continue;
     }
 
     if (dir != heldDir) {
-      heldDir = dir;
-      holdStartMs = now;
-      lastRepeatMs = now;
-      handleDirEvent(dir);
+      if (dir != pendingDir) {
+        pendingDir = dir;
+        pendingStartMs = now;
+      }
+
+      if (now - pendingStartMs >= JOY_DIR_STABLE_MS) {
+        heldDir = dir;
+        pendingDir = DIR_CENTER;
+        holdStartMs = now;
+        lastRepeatMs = now;
+        handleDirEvent(dir);
+      }
     } else {
+      pendingDir = DIR_CENTER;
+
       bool repeatable = (dir == DIR_UP || dir == DIR_DOWN);
 
       if (repeatable && now - holdStartMs >= 500 && now - lastRepeatMs >= 130) {
