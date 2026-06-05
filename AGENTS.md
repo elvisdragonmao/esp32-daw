@@ -1,0 +1,84 @@
+# Agent Notes
+
+## Target
+
+This sketch targets an ESP32 WROVER module.
+
+- FQBN: `esp32:esp32:esp32wrover`
+- Current USB upload port seen on this machine: `/dev/cu.usbserial-0001`
+- Arduino CLI bundled with Arduino IDE:
+  `"/Applications/Arduino IDE.app/Contents/Resources/app/lib/backend/resources/arduino-cli"`
+
+Use this compile check after code changes:
+
+```sh
+"/Applications/Arduino IDE.app/Contents/Resources/app/lib/backend/resources/arduino-cli" compile --fqbn esp32:esp32:esp32wrover .
+```
+
+Use this for build + upload when the board is connected:
+
+```sh
+"/Applications/Arduino IDE.app/Contents/Resources/app/lib/backend/resources/arduino-cli" compile --upload --fqbn esp32:esp32:esp32wrover --port /dev/cu.usbserial-0001 .
+```
+
+## Architecture
+
+Keep the split modules focused:
+
+- `sketch_jun6a.ino`: setup order and task creation only
+- `Config.h`: pins, dimensions, constants, tuning knobs
+- `Types.h`: enums and POD-style structs
+- `State.h/.cpp`: shared state, dirty flags, init data
+- `Joystick.h/.cpp`: analog read, filtering, normalization, direction mapping
+- `AudioEngine.h/.cpp`: I2S, oscillator rendering, envelope, mixing
+- `Sequencer.h/.cpp`: current step advancement, recording writes, voice triggering
+- `DisplayUI.h/.cpp`: TFT drawing and dirty UI refresh
+- `InputController.h/.cpp`: input debounce and menu state machine
+
+## Performance Rules
+
+The audio task must stay deterministic.
+
+- Do not use `new`, `malloc`, `free`, STL containers, or Arduino `String` in runtime paths.
+- Do not add virtual functions or heap-backed abstractions around audio rendering.
+- Keep arrays fixed-size unless there is a clear memory budget reason to change them.
+- Keep critical sections short. Copy shared state inside the lock, then do rendering or triggering outside it.
+- Avoid `Serial.print` in the audio task except for temporary debugging that is removed before finalizing.
+- Prefer integer math in hot paths. Floating point is acceptable during initialization or low-frequency control logic.
+
+## Joystick Notes
+
+The measured joystick ADC range is asymmetric:
+
+- Raw range: `2175..4095`
+- Runtime normalized range: `-1000..1000`
+
+Tune these in `Config.h`:
+
+- `JOY_ADC_MIN`
+- `JOY_ADC_MAX`
+- `JOY_NAV_DEAD`
+- `JOY_RECORD_DEAD`
+- `JOY_AXIS_MARGIN`
+- `JOY_DIR_STABLE_MS`
+- `JOY_REC_STABLE_MS`
+
+If the user reports accidental movement, raise `JOY_NAV_DEAD` and `JOY_RECORD_DEAD` first. If a direction is physically unreachable, inspect joystick wiring before changing software.
+
+## UI Rules
+
+The UI uses dirty flags to avoid full-screen redraws.
+
+- Use `setDirtyFullNoLock`, `setDirtyMenuNoLock`, `setDirtyStatusNoLock`, `setDirtyCellNoLock`, or `setDirtyColNoLock` while holding `stateMux`.
+- Avoid redrawing the full screen for small state changes.
+- Keep drawing code in `DisplayUI.cpp`; do not put TFT drawing in input or sequencer code.
+
+## Verification
+
+Before finishing a change:
+
+1. Run `git diff --check`.
+2. Compile with `esp32:esp32:esp32wrover`.
+3. If hardware behavior changed and the board is connected, upload and report the result.
+4. Mention any unverified hardware assumptions in the final response.
+
