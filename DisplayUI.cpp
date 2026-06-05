@@ -10,11 +10,39 @@ DisplayUI displayUI;
 DisplayUI::DisplayUI() : tft(PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST) {
 }
 
+void DisplayUI::applyTftColorOrder() {
+  uint8_t madctl = ST77XX_MADCTL_RGB;
+
+  switch (TFT_ROTATION & 3) {
+  case 0:
+    madctl = ST77XX_MADCTL_MX | ST77XX_MADCTL_MY;
+    break;
+  case 1:
+    madctl = ST77XX_MADCTL_MY | ST77XX_MADCTL_MV;
+    break;
+  case 2:
+    madctl = 0;
+    break;
+  case 3:
+    madctl = ST77XX_MADCTL_MX | ST77XX_MADCTL_MV;
+    break;
+  }
+
+#if TFT_USE_BGR_COLOR_ORDER
+  madctl |= ST7735_MADCTL_BGR;
+#else
+  madctl |= ST77XX_MADCTL_RGB;
+#endif
+
+  tft.sendCommand(ST77XX_MADCTL, &madctl, 1);
+}
+
 void DisplayUI::begin() {
   SPI.begin(PIN_TFT_SCLK, -1, PIN_TFT_MOSI, PIN_TFT_CS);
 
   tft.initR(INITR_BLACKTAB);
-  tft.setRotation(1);
+  tft.setRotation(TFT_ROTATION);
+  applyTftColorOrder();
 
   COL_BG = ST77XX_BLACK;
   COL_PANEL = tft.color565(8, 35, 45);

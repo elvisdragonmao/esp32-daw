@@ -11,6 +11,8 @@
 #define PIN_TFT_RST 33
 #define PIN_TFT_MOSI 23
 #define PIN_TFT_SCLK 18
+#define TFT_ROTATION 1
+#define TFT_USE_BGR_COLOR_ORDER 1
 
 // MAX98357A
 #define PIN_I2S_BCLK 26
