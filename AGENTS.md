@@ -25,7 +25,7 @@ Use this for build + upload when the board is connected:
 
 Keep the split modules focused:
 
-- `sketch_jun6a.ino`: setup order and task creation only
+- `main.ino`: setup order and task creation only
 - `Config.h`: pins, dimensions, constants, tuning knobs
 - `Types.h`: enums and POD-style structs
 - `State.h/.cpp`: shared state, dirty flags, init data

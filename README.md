@@ -36,7 +36,7 @@
 
 | File | Purpose |
 | --- | --- |
-| `sketch_jun6a.ino` | Arduino entry point, setup order, FreeRTOS task creation |
+| `main.ino` | Arduino entry point, setup order, FreeRTOS task creation |
 | `Config.h` | Pins, display layout, audio constants, joystick tuning |
 | `Types.h` | Shared enums and fixed-size structs |
 | `State.h/.cpp` | Shared state, dirty flags, note tables, initialization |
