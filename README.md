@@ -147,7 +147,7 @@
 
 ## 畫面顏色
 
-實機 ST7735S 目前顯示出來是紅藍通道互換的狀態，所以程式裡設定的橘色在螢幕上會接近藍色，亮藍色會接近土黃色。海報用 SVG 已經依照實機顏色輸出。
+如果實機 ST7735S 出現橘色顯示成藍色、亮藍色顯示成土黃色，代表 TFT 的 RGB/BGR 色序需要在 firmware 裡修正。海報用 SVG 保持預期 UI 顏色，不用紅藍交換補償。
 
 ## 海報用 SVG
 
@@ -228,4 +228,3 @@ arduino-cli compile --upload --fqbn esp32:esp32:esp32wrover --port /dev/cu.usbse
 - audio path 不使用 virtual function
 - critical section 只做短時間共享狀態讀寫
 - audio task pinned to core 1，priority 高於 input/UI
-
