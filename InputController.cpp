@@ -155,12 +155,12 @@ void InputController::handleDirEvent(Dir4 dir) {
 
   else if (mode == MODE_OSC) {
     if (dir == DIR_UP) {
-      oscMenuIndex = (oscMenuIndex == 0) ? 3 : oscMenuIndex - 1;
+      oscMenuIndex = (oscMenuIndex == 0) ? OSC_TYPE_COUNT - 1 : oscMenuIndex - 1;
       setDirtyMenuNoLock();
     }
 
     else if (dir == DIR_DOWN) {
-      oscMenuIndex = (oscMenuIndex + 1) % 4;
+      oscMenuIndex = (oscMenuIndex + 1) % OSC_TYPE_COUNT;
       setDirtyMenuNoLock();
     }
 

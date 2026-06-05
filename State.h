@@ -40,6 +40,7 @@ extern int16_t sineTable[256];
 
 extern const float NOTE_FREQS[8];
 extern const char *const NOTE_NAMES[8];
+extern const char *const DRUM_NAMES[DRUM_SOUND_COUNT];
 
 extern uint16_t COL_BG;
 extern uint16_t COL_PANEL;
@@ -55,6 +56,7 @@ extern uint16_t COL_PLAYHEAD;
 extern uint16_t COL_RECORD;
 
 const char *oscName(OscType osc);
+const char *recordNoteName(OscType osc, int8_t note);
 uint32_t freqToInc(float freq);
 
 void setDirtyFullNoLock();

@@ -5,6 +5,13 @@
 
 AudioEngine audioEngine;
 
+static const uint32_t DRUM_KICK_MIN_INC = 8765239UL;
+static const uint32_t DRUM_TOM_MIN_INC = 15582647UL;
+
+static uint32_t drumFreqToInc(uint16_t freq) {
+  return (uint32_t)(((uint64_t)freq * 4294967296ULL) / SAMPLE_RATE);
+}
+
 void AudioEngine::begin() {
   pinMode(PIN_I2S_SD, OUTPUT);
   digitalWrite(PIN_I2S_SD, HIGH);
@@ -67,12 +74,70 @@ int16_t AudioEngine::renderOscillator(Voice &v) {
         return (int16_t)((int32_t)(ph >> 16) - 32768);
       }
 
+    case OSC_DRUM:
+      {
+        return renderDrum(v);
+      }
+
     default:
       return 0;
   }
 }
 
+int16_t AudioEngine::renderDrum(Voice &v) {
+  v.noiseState ^= v.noiseState << 13;
+  v.noiseState ^= v.noiseState >> 17;
+  v.noiseState ^= v.noiseState << 5;
+
+  int16_t noise = (int16_t)(v.noiseState >> 16);
+  int16_t tone = sineTable[v.phase >> 24];
+
+  switch (v.drum & 0x03) {
+    case 0:
+      if (v.inc > DRUM_KICK_MIN_INC) {
+        v.inc -= v.inc >> 7;
+      }
+      return tone;
+
+    case 1:
+      return (int16_t)(((int32_t)noise * 3 + (tone >> 1)) / 4);
+
+    case 2:
+      return (v.noiseState & 0x8000UL) ? 22000 : -22000;
+
+    case 3:
+      if (v.inc > DRUM_TOM_MIN_INC) {
+        v.inc -= v.inc >> 8;
+      }
+      return (int16_t)((tone >> 1) + (noise >> 3));
+  }
+
+  return 0;
+}
+
+int32_t AudioEngine::drumEnvelopeQ15(Voice &v) {
+  static const int32_t decaySamples[DRUM_SOUND_COUNT] = {
+    SAMPLE_RATE * 150 / 1000,
+    SAMPLE_RATE * 100 / 1000,
+    SAMPLE_RATE * 45 / 1000,
+    SAMPLE_RATE * 180 / 1000
+  };
+
+  int32_t decay = decaySamples[v.drum & 0x03];
+
+  if (v.ageSamples >= decay) {
+    v.active = false;
+    return 0;
+  }
+
+  return ((decay - v.ageSamples) * 32767) / decay;
+}
+
 int32_t AudioEngine::envelopeQ15(Voice &v) {
+  if (v.osc == OSC_DRUM) {
+    return drumEnvelopeQ15(v);
+  }
+
   const int32_t attackSamples = SAMPLE_RATE * 5 / 1000;
   const int32_t releaseSamples = SAMPLE_RATE * 60 / 1000;
 
@@ -100,9 +165,19 @@ void AudioEngine::triggerVoice(uint8_t track, int8_t note, OscType osc, uint32_t
   voices[track].active = true;
   voices[track].track = track;
   voices[track].phase = 0;
-  voices[track].inc = freqToInc(NOTE_FREQS[note]);
+  voices[track].noiseState ^= 0xA5A5A5A5UL ^ ((uint32_t)track << 24) ^ ((uint32_t)note << 16);
   voices[track].osc = osc;
+  voices[track].drum = note & 0x03;
   voices[track].ageSamples = 0;
+
+  if (osc == OSC_DRUM) {
+    static const uint16_t drumFreqs[DRUM_SOUND_COUNT] = {110, 180, 8000, 150};
+    voices[track].inc = drumFreqToInc(drumFreqs[voices[track].drum]);
+    voices[track].gateSamples = samplesPerStep;
+    return;
+  }
+
+  voices[track].inc = freqToInc(NOTE_FREQS[note]);
 
   int32_t gate = (int32_t)(samplesPerStep * 75 / 100);
   if (gate < 1) gate = 1;

@@ -61,6 +61,85 @@ void DisplayUI::begin() {
   tft.setTextWrap(false);
 }
 
+void DisplayUI::drawOscShape(int x, int y, OscType osc, uint16_t color) {
+  switch (osc) {
+    case OSC_SINE:
+      {
+        static const uint8_t sy[16] = {4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3};
+        for (uint8_t i = 0; i < 15; i++) {
+          tft.drawLine(x + i * 2, y + sy[i], x + (i + 1) * 2, y + sy[i + 1], color);
+        }
+      }
+      break;
+
+    case OSC_TRIANGLE:
+      tft.drawLine(x, y + 7, x + 7, y + 1, color);
+      tft.drawLine(x + 7, y + 1, x + 15, y + 7, color);
+      tft.drawLine(x + 15, y + 7, x + 23, y + 1, color);
+      tft.drawLine(x + 23, y + 1, x + 30, y + 7, color);
+      break;
+
+    case OSC_SQUARE:
+      tft.drawLine(x, y + 7, x + 6, y + 7, color);
+      tft.drawLine(x + 6, y + 7, x + 6, y + 1, color);
+      tft.drawLine(x + 6, y + 1, x + 15, y + 1, color);
+      tft.drawLine(x + 15, y + 1, x + 15, y + 7, color);
+      tft.drawLine(x + 15, y + 7, x + 24, y + 7, color);
+      tft.drawLine(x + 24, y + 7, x + 24, y + 1, color);
+      tft.drawLine(x + 24, y + 1, x + 30, y + 1, color);
+      break;
+
+    case OSC_SAW:
+      tft.drawLine(x, y + 7, x + 10, y + 1, color);
+      tft.drawLine(x + 10, y + 1, x + 10, y + 7, color);
+      tft.drawLine(x + 10, y + 7, x + 20, y + 1, color);
+      tft.drawLine(x + 20, y + 1, x + 20, y + 7, color);
+      tft.drawLine(x + 20, y + 7, x + 30, y + 1, color);
+      break;
+
+    default:
+      break;
+  }
+}
+
+void DisplayUI::drawOscMenuItem(uint8_t row, OscType osc, bool selected) {
+  int y = VIEW_Y + row * 10;
+  uint16_t bg = selected ? COL_SELECT : COL_PANEL;
+
+  tft.fillRect(0, y, MENU_W, 10, bg);
+
+  if (osc == OSC_DRUM) {
+    tft.setTextSize(1);
+    tft.setTextColor(COL_TEXT, bg);
+    tft.setCursor(2, y + 1);
+    tft.print("Drum");
+    return;
+  }
+
+  drawOscShape(7, y + 1, osc, COL_TEXT);
+}
+
+void DisplayUI::drawTrackOscItem(uint8_t row, uint8_t track, bool selected, bool muted) {
+  int y = VIEW_Y + row * 10;
+  uint16_t bg = selected ? COL_SELECT : COL_PANEL;
+  uint16_t fg = muted ? COL_MUTED_TEXT : COL_TEXT;
+
+  tft.fillRect(0, y, MENU_W, 10, bg);
+  tft.setTextSize(1);
+  tft.setTextColor(fg, bg);
+  tft.setCursor(2, y + 1);
+  tft.print(track + 1);
+
+  OscType osc = tracks[track].osc;
+
+  if (osc == OSC_DRUM) {
+    tft.setCursor(14, y + 1);
+    tft.print("Drm");
+  } else {
+    drawOscShape(13, y + 1, osc, fg);
+  }
+}
+
 void DisplayUI::drawMenuItem(uint8_t row, const char *text, bool selected, bool muted) {
   int y = VIEW_Y + row * 10;
 
@@ -80,11 +159,8 @@ void DisplayUI::drawLeftPanel() {
   ScreenMode mode = screenMode;
 
   if (mode == MODE_MAIN) {
-    char buf[12];
-
     for (uint8_t t = 0; t < TRACK_COUNT; t++) {
-      snprintf(buf, sizeof(buf), "%d %s", t + 1, oscName(tracks[t].osc));
-      drawMenuItem(t, buf, mainIndex == t, tracks[t].mute);
+      drawTrackOscItem(t, t, mainIndex == t, tracks[t].mute);
     }
 
     drawMenuItem(4, playing ? "Pause" : "Play", mainIndex == 4);
@@ -128,10 +204,11 @@ void DisplayUI::drawLeftPanel() {
   }
 
   else if (mode == MODE_OSC) {
-    drawMenuItem(0, "Sin", oscMenuIndex == 0);
-    drawMenuItem(1, "Tri", oscMenuIndex == 1);
-    drawMenuItem(2, "Sqr", oscMenuIndex == 2);
-    drawMenuItem(3, "Saw", oscMenuIndex == 3);
+    drawOscMenuItem(0, OSC_SINE, oscMenuIndex == OSC_SINE);
+    drawOscMenuItem(1, OSC_TRIANGLE, oscMenuIndex == OSC_TRIANGLE);
+    drawOscMenuItem(2, OSC_SQUARE, oscMenuIndex == OSC_SQUARE);
+    drawOscMenuItem(3, OSC_SAW, oscMenuIndex == OSC_SAW);
+    drawOscMenuItem(4, OSC_DRUM, oscMenuIndex == OSC_DRUM);
 
     char buf[10];
     snprintf(buf, sizeof(buf), "T%dOSC", selectedTrack + 1);
@@ -290,7 +367,7 @@ void DisplayUI::drawStatus() {
     tft.setCursor(GRID_X, STATUS_Y + 13);
 
     if (n >= 0) {
-      snprintf(buf, sizeof(buf), "Note: %s", NOTE_NAMES[n]);
+      snprintf(buf, sizeof(buf), "Note: %s", recordNoteName(tracks[recordTrack].osc, n));
     } else {
       snprintf(buf, sizeof(buf), "Note: --");
     }

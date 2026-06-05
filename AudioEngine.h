@@ -17,7 +17,9 @@ private:
   I2SClass i2s;
 
   int16_t renderOscillator(Voice &v);
+  int16_t renderDrum(Voice &v);
   int32_t envelopeQ15(Voice &v);
+  int32_t drumEnvelopeQ15(Voice &v);
 };
 
 extern AudioEngine audioEngine;

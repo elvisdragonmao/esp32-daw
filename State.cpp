@@ -44,6 +44,10 @@ const char *const NOTE_NAMES[8] = {
   "C", "D", "E", "F", "G", "A", "B", "C+"
 };
 
+const char *const DRUM_NAMES[DRUM_SOUND_COUNT] = {
+  "Kick", "Snare", "Hat", "Tom"
+};
+
 uint16_t COL_BG;
 uint16_t COL_PANEL;
 uint16_t COL_PANEL_DARK;
@@ -63,8 +67,23 @@ const char *oscName(OscType osc) {
     case OSC_TRIANGLE: return "Tri";
     case OSC_SQUARE: return "Sqr";
     case OSC_SAW: return "Saw";
+    case OSC_DRUM: return "Drum";
     default: return "?";
   }
+}
+
+const char *recordNoteName(OscType osc, int8_t note) {
+  if (note < 0) return "--";
+
+  if (osc == OSC_DRUM) {
+    return DRUM_NAMES[note & 0x03];
+  }
+
+  if (note < 8) {
+    return NOTE_NAMES[note];
+  }
+
+  return "?";
 }
 
 uint32_t freqToInc(float freq) {
@@ -131,7 +150,9 @@ void initTracks() {
     voices[t].track = t;
     voices[t].phase = 0;
     voices[t].inc = 0;
+    voices[t].noiseState = 0x13579BDFUL + ((uint32_t)t * 0x2468ACEUL);
     voices[t].osc = (OscType)t;
+    voices[t].drum = 0;
     voices[t].ageSamples = 0;
     voices[t].gateSamples = 0;
   }
