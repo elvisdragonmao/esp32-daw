@@ -10,11 +10,11 @@
 // ============================================================
 
 // ST7735S 80x160 TFT
-#define PIN_TFT_CS 27
-#define PIN_TFT_DC 17  // LCD ç¬? 8 ??³ï?????è¨­æ?? DC / A0 / RS
-#define PIN_TFT_RST 16
-#define PIN_TFT_MOSI 23  // LCD SDA
-#define PIN_TFT_SCLK 18  // LCD SCL
+#define PIN_TFT_CS 5
+#define PIN_TFT_DC 27
+#define PIN_TFT_RST 33
+#define PIN_TFT_MOSI 23
+#define PIN_TFT_SCLK 18
 
 // MAX98357A
 #define PIN_I2S_BCLK 26
@@ -27,7 +27,7 @@
 #define PIN_JOY_Y 35
 #define PIN_JOY_SW 32
 
-// å¸¸è?? joystick æ¨¡ç??ï¼?å¾?ä¸???? Y ???è®?å°?ï¼????ä»¥é??è¨­å??è½? Y
+// å¸¸è¦‹ joystick æ¨¡çµ„ï¼šå¾€ä¸Šæ™‚ Y æœƒè®Šå°ï¼Œæ‰€ä»¥é è¨­åè½‰ Y
 #define JOY_INVERT_X false
 #define JOY_INVERT_Y true
 
@@ -45,7 +45,7 @@
 #define TRACK_COUNT 4
 #define STEP_COUNT 16
 
-// 16 steps = ???å°?ç¯?ï¼?æ¯? step = ä¸????
+// 16 steps = å››å°ç¯€ï¼Œæ¯ step = ä¸€æ‹
 // stepMs = 60000 / BPM
 
 // ============================================================
@@ -55,7 +55,7 @@
 #define SCREEN_W             160
 #define SCREEN_H             80
 
-// §Aªº ST7735 BLACKTAB ¹ê»Ú¥iµø°Ï¬O y = 24 ~ 103
+//24 ~ 103
 #define VIEW_X               0
 #define VIEW_Y               24
 #define VIEW_W               160
@@ -287,8 +287,8 @@ void initTracks() {
     voices[t].gateSamples = 0;
   }
 
-  // Demo patternï¼???¹ä¾¿ä½?ä¸????æ©?å°±è?½è?½å?°è?²é?³ã??
-  // ä¸???³è?? demo pattern ???è©±ï????????æ®µå?ªæ????³å?¯ã??
+  // Demo patternï¼Œæ–¹ä¾¿ä½ ä¸€é–‹æ©Ÿå°±èƒ½è½åˆ°è²éŸ³ã€‚
+  // ä¸æƒ³è¦ demo pattern çš„è©±ï¼ŒæŠŠé€™æ®µåˆªæ‰å³å¯ã€‚
   tracks[0].steps[0].note = 0;
   tracks[0].steps[4].note = 2;
   tracks[0].steps[8].note = 4;
@@ -366,28 +366,19 @@ int8_t readRecordNote8() {
 
   if (!left && !right && !up && !down) return -1;
 
-  // å·¦ä??ï¼?é«? C
   if (left && up) return 7;
 
-  // ä¸?ï¼?D
   if (up && !left && !right) return 1;
 
-  // ??³ä??ï¼?E
   if (right && up) return 2;
 
-  // ??³ï??F
   if (right && !up && !down) return 3;
 
-  // ??³ä??ï¼?G
   if (right && down) return 4;
 
-  // ä¸?ï¼?A
   if (down && !left && !right) return 5;
 
-  // å·¦ä??ï¼?B
   if (left && down) return 6;
-
-  // å·¦ï??ä½? C
   if (left && !up && !down) return 0;
 
   return -1;
@@ -402,7 +393,7 @@ void setupI2S() {
   digitalWrite(PIN_I2S_SD, HIGH);
 
   // BCLK, WS/LRC, DOUT, DIN, MCLK
-  // DIN ??? MCLK ä¸???¨ï?????ä»¥å¡« -1
+  // DIN å’Œ MCLK ä¸ç”¨ï¼Œæ‰€ä»¥å¡« -1
   I2S.setPins(
     PIN_I2S_BCLK,
     PIN_I2S_LRC,
@@ -532,7 +523,7 @@ int16_t renderAudioSample() {
 
   mix = (mix * localMaster) / 127;
 
-  // 4 è»?æ··é?³é????? headroomï¼???¿å????????
+  // 4 è»Œæ··éŸ³é ç•™ headroomï¼Œé¿å…çˆ†éŸ³
   mix /= 4;
 
   if (mix > 32767) mix = 32767;
@@ -570,7 +561,7 @@ void advanceStepFromAudio(uint32_t samplesPerStep) {
     setDirtyFullNoLock();
   }
 
-  // Record armedï¼?ç­? loop ?????? step 0 ??????å§????
+  // Record armedï¼šç­‰ loop å›åˆ° step 0 æ‰é–‹å§‹éŒ„
   if (screenMode == MODE_REC_ARMED && newStep == 0) {
     screenMode = MODE_RECORDING;
     recordCount = 0;
@@ -578,7 +569,7 @@ void advanceStepFromAudio(uint32_t samplesPerStep) {
     setDirtyFullNoLock();
   }
 
-  // Recordingï¼?æ¯???? step è®?ä¸?æ¬¡ç?®å?? joystick ??¹å??
+  // Recordingï¼šæ¯å€‹ step è®€ä¸€æ¬¡ç›®å‰ joystick æ–¹å‘
   if (screenMode == MODE_RECORDING) {
     int8_t n = currentRecNote;
 
@@ -654,7 +645,8 @@ void audioTask(void *param) {
 
       int16_t s = renderAudioSample();
 
-      // stereo frame: L/R ??½è¼¸??ºä??æ¨??????²é??
+  // è¼¸å‡º stereo frameï¼Œå·¦å³è²é“åŒæ¨£çš„ sampleã€‚
+  // MAX98357A ä¸ç®¡ L/R è…³æ€éº¼è¨­éƒ½æ¯”è¼ƒå®¹æ˜“æœ‰è²éŸ³ã€‚
       audioBuffer[i * 2] = s;
       audioBuffer[i * 2 + 1] = s;
     }
@@ -1198,7 +1190,7 @@ void handleDirEvent(Dir4 dir) {
     }
   }
 
-  // REC_ARMED / RECORDING ??????ä¸?ï¼???¹å????µæ?¿ä??è¼¸å?¥é?³ç¬¦ï¼?ä¸??????¸å?®æ??ä½????
+  // REC_ARMED / RECORDING ç‹€æ…‹ä¸‹ï¼Œæ–¹å‘éµæ‹¿ä¾†è¼¸å…¥éŸ³ç¬¦ï¼Œä¸åšé¸å–®æ“ä½œã€‚
 
   portEXIT_CRITICAL(&stateMux);
 }
