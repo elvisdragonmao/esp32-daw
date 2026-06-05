@@ -24,8 +24,8 @@ void Joystick::calibrate() {
     delay(2);
   }
 
-  centerX = sx / 100;
-  centerY = sy / 100;
+  centerX = clampAdc(sx / 100);
+  centerY = clampAdc(sy / 100);
   filteredX = centerX;
   filteredY = centerY;
 }
@@ -40,6 +40,28 @@ int Joystick::readPinAverage(uint8_t pin) {
   return sum / JOY_ANALOG_SAMPLES;
 }
 
+int Joystick::clampAdc(int value) {
+  if (value < JOY_ADC_MIN) return JOY_ADC_MIN;
+  if (value > JOY_ADC_MAX) return JOY_ADC_MAX;
+  return value;
+}
+
+int Joystick::normalizeAxis(int value, int center) {
+  value = clampAdc(value);
+  center = clampAdc(center);
+
+  int offset = value - center;
+  int span = offset >= 0 ? JOY_ADC_MAX - center : center - JOY_ADC_MIN;
+
+  if (span < 1) return 0;
+
+  long normalized = ((long)offset * JOY_NORM_SCALE) / span;
+
+  if (normalized > JOY_NORM_SCALE) return JOY_NORM_SCALE;
+  if (normalized < -JOY_NORM_SCALE) return -JOY_NORM_SCALE;
+  return (int)normalized;
+}
+
 void Joystick::readDelta(int &dx, int &dy) {
   int rawX = readPinAverage(PIN_JOY_X);
   int rawY = readPinAverage(PIN_JOY_Y);
@@ -47,8 +69,8 @@ void Joystick::readDelta(int &dx, int &dy) {
   filteredX = ((filteredX * (JOY_FILTER_WEIGHT - 1)) + rawX) / JOY_FILTER_WEIGHT;
   filteredY = ((filteredY * (JOY_FILTER_WEIGHT - 1)) + rawY) / JOY_FILTER_WEIGHT;
 
-  dx = filteredX - centerX;
-  dy = filteredY - centerY;
+  dx = normalizeAxis(filteredX, centerX);
+  dy = normalizeAxis(filteredY, centerY);
 
   if (JOY_INVERT_X) dx = -dx;
   if (JOY_INVERT_Y) dy = -dy;

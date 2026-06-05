@@ -28,10 +28,13 @@
 #define JOY_INVERT_Y true
 
 // Joystick anti-noise tuning
+#define JOY_ADC_MIN 2175
+#define JOY_ADC_MAX 4095
+#define JOY_NORM_SCALE 1000
 #define JOY_ANALOG_SAMPLES 4
 #define JOY_FILTER_WEIGHT 4
-#define JOY_NAV_DEAD 950
-#define JOY_RECORD_DEAD 950
+#define JOY_NAV_DEAD 450
+#define JOY_RECORD_DEAD 450
 #define JOY_AXIS_MARGIN 120
 #define JOY_DIR_STABLE_MS 45
 #define JOY_REC_STABLE_MS 40

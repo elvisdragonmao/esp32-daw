@@ -20,6 +20,8 @@ private:
   int filteredY = 2048;
 
   int readPinAverage(uint8_t pin);
+  int clampAdc(int value);
+  int normalizeAxis(int value, int center);
 };
 
 extern Joystick joystick;
