@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pocket DAW A2 Poster</title>
+    <link rel="stylesheet" href="report.css">
+  </head>
+  <body>
+    <main class="sheet" aria-label="Pocket DAW A2 poster">
+      <div class="background-grid" aria-hidden="true"></div>
+      <div class="trim trim-top" aria-hidden="true"></div>
+      <div class="trim trim-bottom" aria-hidden="true"></div>
+
+      <header class="hero">
+        <section class="hero-copy">
+          <p class="kicker">Digital Design & Fabrication / Embedded Music Instrument</p>
+          <h1>Pocket DAW</h1>
+          <p class="subtitle">可攜式硬體音序器與合成器</p>
+          <p class="lead">
+            Pocket DAW 將桌面音樂工作站常用的 loop 編曲、音色控制與即時錄音，
+            收斂成一台可手持操作的獨立樂器。ESP32 WROVER 負責音訊合成、
+            TFT 介面與輸入判讀；外殼則以 Fusion 建模、3D 列印完成，
+            讓電子模組、握持角度與操作動線整合在同一個尺寸內。
+          </p>
+          <div class="hero-tags" aria-label="project tags">
+            <span>Fusion 360</span>
+            <span>3D Print</span>
+            <span>ESP32 WROVER</span>
+            <span>I2S Audio</span>
+          </div>
+        </section>
+
+        <section class="hero-visual" aria-label="portable digital audio workstation render">
+          <img src="image.png" alt="Pocket DAW enclosure render with TFT screen and joystick">
+          <div class="product-plate">
+            <span>Standalone Music Interface</span>
+            <strong>4 Tracks / 32 Steps / Live Recording</strong>
+          </div>
+        </section>
+      </header>
+
+      <section class="metrics" aria-label="key system metrics">
+        <article>
+          <span class="metric-label">Tracks</span>
+          <strong>4</strong>
+          <p>獨立音量、音色與 step pattern</p>
+        </article>
+        <article>
+          <span class="metric-label">Pattern</span>
+          <strong>32</strong>
+          <p>32-step loop, 1-8 bars per pattern</p>
+        </article>
+        <article>
+          <span class="metric-label">Display</span>
+          <strong>160 x 80</strong>
+          <p>ST7735S TFT, partial refresh UI</p>
+        </article>
+        <article>
+          <span class="metric-label">Audio</span>
+          <strong>22.05 kHz</strong>
+          <p>I2S synthesis with MAX98357A</p>
+        </article>
+      </section>
+
+      <section class="poster-grid">
+        <article class="panel concept">
+          <div class="panel-heading">
+            <span>01</span>
+            <h2>作品概念</h2>
+          </div>
+          <p>
+            Pocket DAW 的目標不是複製完整 DAW 軟體，而是把即興創作最需要的節奏、
+            旋律、音色與錄音流程，整理成一個可拿起就用的硬體介面。使用者能在主畫面
+            檢視四軌 pattern，透過搖桿切換選單、調整參數、寫入音符，最後直接由內建音訊輸出播放。
+          </p>
+          <ul class="tight-list">
+            <li>單一搖桿同時負責導覽、確認、返回與八方向音符輸入。</li>
+            <li>四軌安排可分配 bass、lead、drum 與 texture，形成可疊加的 loop 結構。</li>
+            <li>外殼預留螢幕開窗、控制斜面與走線空間，兼顧握持與維修。</li>
+          </ul>
+        </article>
+
+        <article class="panel fabrication">
+          <div class="panel-heading">
+            <span>02</span>
+            <h2>數位製造設計</h2>
+          </div>
+          <div class="fabrication-body">
+            <div class="process-line">
+              <span>機構量測</span>
+              <span>Fusion 建模</span>
+              <span>列印組裝</span>
+            </div>
+            <p>
+              外殼先以實際模組尺寸建立約束，再決定面板斜度、螢幕開口、搖桿位置與內部固定空間。
+              白色外框提供保護與視覺邊界；深色面板集中操作焦點，也讓螢幕與控制器在展場光線下更容易辨識。
+            </p>
+          </div>
+        </article>
+
+        <article class="panel ui-panel">
+          <div class="panel-heading">
+            <span>03</span>
+            <h2>操作介面</h2>
+          </div>
+          <figure class="main-ui">
+            <img src="ui-svg/02-main-playing.svg" alt="Main playing screen of the Pocket DAW UI">
+            <figcaption>主畫面集中顯示軌道狀態、step grid、播放游標與錄音提示，避免在演奏時頻繁切頁。</figcaption>
+          </figure>
+          <div class="ui-strip" aria-label="UI states">
+            <figure>
+              <img src="ui-svg/03-track-menu.svg" alt="Track menu screen">
+              <figcaption>Track</figcaption>
+            </figure>
+            <figure>
+              <img src="ui-svg/06-bpm.svg" alt="BPM screen">
+              <figcaption>BPM</figcaption>
+            </figure>
+            <figure>
+              <img src="ui-svg/08-osc-menu.svg" alt="Oscillator menu screen">
+              <figcaption>OSC</figcaption>
+            </figure>
+            <figure>
+              <img src="ui-svg/10-recording.svg" alt="Recording screen">
+              <figcaption>REC</figcaption>
+            </figure>
+          </div>
+        </article>
+
+        <article class="panel interaction">
+          <div class="panel-heading">
+            <span>04</span>
+            <h2>互動與錄音</h2>
+          </div>
+          <div class="interaction-grid">
+            <div>
+              <h3>Navigation</h3>
+              <p>搖桿上 / 下用於移動游標或微調數值，右方向負責確認、進入選單與播放切換，左方向回到上一層。</p>
+            </div>
+            <div>
+              <h3>Recording</h3>
+              <p>啟動錄音後先等待 loop 回到第一拍，再於每個 step 取樣搖桿方向；無有效方向時保留休止。</p>
+            </div>
+          </div>
+          <div class="note-map" aria-label="joystick note map">
+            <span>C</span>
+            <span>D</span>
+            <span>E</span>
+            <span>F</span>
+            <span>G</span>
+            <span>A</span>
+            <span>B</span>
+            <span>C+</span>
+          </div>
+        </article>
+
+        <article class="panel architecture">
+          <div class="panel-heading">
+            <span>05</span>
+            <h2>系統架構</h2>
+          </div>
+          <div class="signal-flow" aria-label="system signal flow">
+            <span>Joystick</span>
+            <span>Input Controller</span>
+            <span>Sequencer</span>
+            <span>Audio Engine</span>
+            <span>I2S Amp</span>
+            <span>Speaker</span>
+          </div>
+          <p>
+            程式依職責拆成輸入、防抖、共享狀態、音序器、音訊引擎與顯示刷新。播放時只在臨界區複製必要狀態，
+            音訊 task 使用固定 buffer 進行振盪器、包絡與混音計算，降低 UI 更新對聲音輸出的干擾。
+          </p>
+        </article>
+
+        <article class="panel circuit">
+          <div class="panel-heading">
+            <span>06</span>
+            <h2>硬體連接</h2>
+          </div>
+          <figure>
+            <img src="circuit.svg" alt="Circuit wiring diagram for ESP32 WROVER mini DAW">
+            <figcaption>ESP32 WROVER 連接 ST7735S TFT、MAX98357A I2S amplifier 與 2-axis analog joystick，分別處理顯示、音訊與控制輸入。</figcaption>
+          </figure>
+        </article>
+
+        <article class="panel details">
+          <div class="panel-heading">
+            <span>07</span>
+            <h2>核心規格</h2>
+          </div>
+          <dl class="spec-list">
+            <div>
+              <dt>控制核心</dt>
+              <dd>ESP32 WROVER module, FreeRTOS tasks</dd>
+            </div>
+            <div>
+              <dt>音訊輸出</dt>
+              <dd>MAX98357A I2S DAC / Class-D amplifier</dd>
+            </div>
+            <div>
+              <dt>輸入方式</dt>
+              <dd>2-axis analog joystick + push switch</dd>
+            </div>
+            <div>
+              <dt>音色</dt>
+              <dd>Sine, Triangle, Square, Saw, Drum voice</dd>
+            </div>
+            <div>
+              <dt>節奏控制</dt>
+              <dd>BPM, bars, master / track volume</dd>
+            </div>
+          </dl>
+        </article>
+      </section>
+
+      <footer class="footer">
+        <div>
+          <strong>毛宥鈞&nbsp;&nbsp;設計・製作</strong>
+          <span>資訊工程學系 / 114550020</span>
+        </div>
+        <div class="footer-code">ESP32-DAW / A2 REPORT / 2026</div>
+      </footer>
+    </main>
+  </body>
+</html>
