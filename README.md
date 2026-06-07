@@ -31,30 +31,30 @@
 
 ## 接線表
 
-| 功能 | ESP32 pin |
-| --- | --- |
-| TFT CS | GPIO 5 |
-| TFT DC | GPIO 27 |
-| TFT RST | GPIO 33 |
-| TFT MOSI | GPIO 23 |
-| TFT SCLK | GPIO 18 |
-| I2S BCLK | GPIO 26 |
-| I2S LRC/WS | GPIO 25 |
-| I2S DOUT | GPIO 22 |
-| I2S SD | GPIO 21 |
-| Joystick X | GPIO 34 |
-| Joystick Y | GPIO 35 |
-| Joystick SW | GPIO 32 |
+| 功能        | ESP32 pin |
+| ----------- | --------- |
+| TFT CS      | GPIO 5    |
+| TFT DC      | GPIO 27   |
+| TFT RST     | GPIO 33   |
+| TFT MOSI    | GPIO 23   |
+| TFT SCLK    | GPIO 18   |
+| I2S BCLK    | GPIO 26   |
+| I2S LRC/WS  | GPIO 25   |
+| I2S DOUT    | GPIO 22   |
+| I2S SD      | GPIO 21   |
+| Joystick X  | GPIO 34   |
+| Joystick Y  | GPIO 35   |
+| Joystick SW | GPIO 32   |
 
 ## 操作方式
 
 搖桿用來操作所有畫面。
 
-| 動作 | 功能 |
-| --- | --- |
+| 動作    | 功能                            |
+| ------- | ------------------------------- |
 | 上 / 下 | 移動選單游標，或增加 / 減少數值 |
-| 右 | 進入選單、確認項目、切換播放 |
-| 左 | 返回上一層，或離開參數調整畫面 |
+| 右      | 進入選單、確認項目、切換播放    |
+| 左      | 返回上一層，或離開參數調整畫面  |
 
 錄音模式中，搖桿方向不再控制選單，而是用來輸入音符。放開搖桿代表空拍。
 
@@ -77,12 +77,12 @@
 
 在主畫面選擇第 1 到第 4 軌後，向右進入軌道選單。
 
-| 項目 | 功能 |
-| --- | --- |
-| `Mute` / `Unmut` | 靜音或取消靜音目前軌道 |
-| `Record` | 進入錄音待命 |
-| `Vol` | 調整目前軌道音量 |
-| `OSC` | 選擇目前軌道的 oscillator |
+| 項目             | 功能                      |
+| ---------------- | ------------------------- |
+| `Mute` / `Unmut` | 靜音或取消靜音目前軌道    |
+| `Record`         | 進入錄音待命              |
+| `Vol`            | 調整目前軌道音量          |
+| `OSC`            | 選擇目前軌道的 oscillator |
 
 ## 音量、BPM 與小節數
 
@@ -98,13 +98,13 @@
 
 每條軌道可以選擇一種 oscillator：
 
-| 顯示 | 波形 |
-| --- | --- |
-| Sine 圖示 | Sine |
-| Triangle 圖示 | Triangle |
-| Square 圖示 | Square |
-| Saw 圖示 | Saw |
-| `Drum` | 4 種 drum 聲音：Kick、Snare、Hat、Tom |
+| 顯示          | 波形                                  |
+| ------------- | ------------------------------------- |
+| Sine 圖示     | Sine                                  |
+| Triangle 圖示 | Triangle                              |
+| Square 圖示   | Square                                |
+| Saw 圖示      | Saw                                   |
+| `Drum`        | 4 種 drum 聲音：Kick、Snare、Hat、Tom |
 
 ## 錄音流程
 
@@ -119,16 +119,16 @@
 如果目前軌道選的是 `Drum`，同一組方向會映射成 4 種 drum 聲音：左 / 右下是 Kick，上 / 下是 Snare，右上 / 左下是 Hat，右 / 左上是 Tom。
 
 | 搖桿方向 | 音符 |
-| --- | --- |
-| 左 | C |
-| 上 | D |
-| 右上 | E |
-| 右 | F |
-| 右下 | G |
-| 下 | A |
-| 左下 | B |
-| 左上 | C+ |
-| 放開 | 空拍 |
+| -------- | ---- |
+| 左       | C    |
+| 上       | D    |
+| 右上     | E    |
+| 右       | F    |
+| 右下     | G    |
+| 下       | A    |
+| 左下     | B    |
+| 左上     | C+   |
+| 放開     | 空拍 |
 
 ## 搖桿校正
 
@@ -214,17 +214,17 @@ arduino-cli compile --upload --fqbn esp32:esp32:esp32wrover --port /dev/cu.usbse
 
 ## 檔案結構
 
-| 檔案 | 說明 |
-| --- | --- |
-| `sketch_jun6a.ino` | Arduino 入口、初始化順序、FreeRTOS task 建立 |
-| `Config.h` | pin、畫面尺寸、音訊參數、搖桿設定 |
-| `Types.h` | enum 與固定大小 struct |
-| `State.h/.cpp` | 共享狀態、dirty flags、初始化 pattern |
-| `Joystick.h/.cpp` | ADC 校正、濾波、dead zone、方向判斷 |
-| `AudioEngine.h/.cpp` | I2S、oscillator、envelope、mixing、audio task |
-| `Sequencer.h/.cpp` | step 推進、錄音寫入、voice trigger |
-| `DisplayUI.h/.cpp` | TFT 繪圖與 dirty UI 更新 |
-| `InputController.h/.cpp` | 搖桿事件、debounce、選單狀態機 |
+| 檔案                     | 說明                                          |
+| ------------------------ | --------------------------------------------- |
+| `sketch_jun6a.ino`       | Arduino 入口、初始化順序、FreeRTOS task 建立  |
+| `Config.h`               | pin、畫面尺寸、音訊參數、搖桿設定             |
+| `Types.h`                | enum 與固定大小 struct                        |
+| `State.h/.cpp`           | 共享狀態、dirty flags、初始化 pattern         |
+| `Joystick.h/.cpp`        | ADC 校正、濾波、dead zone、方向判斷           |
+| `AudioEngine.h/.cpp`     | I2S、oscillator、envelope、mixing、audio task |
+| `Sequencer.h/.cpp`       | step 推進、錄音寫入、voice trigger            |
+| `DisplayUI.h/.cpp`       | TFT 繪圖與 dirty UI 更新                      |
+| `InputController.h/.cpp` | 搖桿事件、debounce、選單狀態機                |
 
 ## 性能設計
 
@@ -235,7 +235,6 @@ arduino-cli compile --upload --fqbn esp32:esp32:esp32wrover --port /dev/cu.usbse
 - audio path 不使用 virtual function
 - critical section 只做短時間共享狀態讀寫
 - audio task pinned to core 1，priority 高於 input/UI
-
 
 ## Commit And PR Guidance
 
