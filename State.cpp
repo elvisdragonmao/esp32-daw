@@ -27,6 +27,7 @@ volatile uint8_t oscMenuIndex = 0;
 volatile uint8_t recordTrack = 0;
 volatile uint8_t recordCount = 0;
 volatile int8_t currentRecNote = -1;
+volatile int8_t recordLatchedNote = -1;
 
 volatile bool dirtyFull = true;
 volatile bool dirtyMenu = true;

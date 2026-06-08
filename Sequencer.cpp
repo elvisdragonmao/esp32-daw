@@ -27,6 +27,7 @@ void Sequencer::advanceFromAudio(uint32_t samplesPerStep) {
   currentStep = (currentStep + 1) % stepsInLoop;
   newStep = currentStep;
   previousStep = oldStep;
+  bool startedRecording = false;
 
   setDirtyColNoLock(oldStep);
   setDirtyColNoLock(newStep);
@@ -40,18 +41,22 @@ void Sequencer::advanceFromAudio(uint32_t samplesPerStep) {
   if (screenMode == MODE_REC_ARMED && newStep == 0) {
     screenMode = MODE_RECORDING;
     recordCount = 0;
+    recordLatchedNote = -1;
     clearTrackNoLock(recordTrack);
     setDirtyFullNoLock();
+    startedRecording = true;
   }
 
-  // Recording: write the currently held joystick note once per step.
-  if (screenMode == MODE_RECORDING) {
-    int8_t n = currentRecNote;
+  // Recording: write any note held during the step that just ended.
+  if (screenMode == MODE_RECORDING && !startedRecording) {
+    int8_t n = recordLatchedNote;
 
-    tracks[recordTrack].steps[newStep].note = n;
-    tracks[recordTrack].steps[newStep].velocity = (n >= 0) ? 100 : 0;
+    tracks[recordTrack].steps[oldStep].note = n;
+    tracks[recordTrack].steps[oldStep].velocity = (n >= 0) ? 100 : 0;
 
-    setDirtyCellNoLock(recordTrack, newStep);
+    recordLatchedNote = -1;
+
+    setDirtyCellNoLock(recordTrack, oldStep);
     setDirtyStatusNoLock();
 
     recordCount++;

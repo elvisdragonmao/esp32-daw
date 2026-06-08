@@ -84,6 +84,7 @@ void InputController::handleDirEvent(Dir4 dir) {
         recordTrack = selectedTrack;
         recordCount = 0;
         currentRecNote = -1;
+        recordLatchedNote = -1;
         screenMode = MODE_REC_ARMED;
 
         if (!playing) {
@@ -238,6 +239,14 @@ void InputController::task() {
         portENTER_CRITICAL(&stateMux);
         currentRecNote = stableRecNote;
         setDirtyStatusNoLock();
+        portEXIT_CRITICAL(&stateMux);
+      }
+
+      if (mode == MODE_RECORDING && stableRecNote >= 0) {
+        portENTER_CRITICAL(&stateMux);
+        if (screenMode == MODE_RECORDING) {
+          recordLatchedNote = stableRecNote;
+        }
         portEXIT_CRITICAL(&stateMux);
       }
 

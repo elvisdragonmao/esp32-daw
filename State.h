@@ -30,6 +30,7 @@ extern volatile uint8_t oscMenuIndex;
 extern volatile uint8_t recordTrack;
 extern volatile uint8_t recordCount;
 extern volatile int8_t currentRecNote;
+extern volatile int8_t recordLatchedNote;
 
 extern volatile bool dirtyFull;
 extern volatile bool dirtyMenu;

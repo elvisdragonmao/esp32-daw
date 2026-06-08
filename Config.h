@@ -30,7 +30,7 @@
 #define JOY_INVERT_Y true
 
 // Joystick anti-noise tuning
-#define JOY_ADC_MIN 2175
+#define JOY_ADC_MIN 0
 #define JOY_ADC_MAX 4095
 #define JOY_NORM_SCALE 1000
 #define JOY_ANALOG_SAMPLES 4
