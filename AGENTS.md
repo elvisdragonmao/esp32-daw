@@ -2,7 +2,7 @@
 
 ## Target
 
-This sketch targets an ESP32 WROVER module.
+This sketch targets an ESP32 WROVER / Devboard V1 module.
 
 - FQBN: `esp32:esp32:esp32wrover`
 - Current USB upload port seen on this machine: `/dev/cu.usbserial-0001`
