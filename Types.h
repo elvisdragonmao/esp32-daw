@@ -21,6 +21,7 @@ enum ScreenMode : uint8_t {
   MODE_TRACK,
   MODE_MASTER_VOL,
   MODE_TRACK_VOL,
+  MODE_TRACK_PITCH,
   MODE_BPM,
   MODE_BARS,
   MODE_OSC,
@@ -45,6 +46,7 @@ struct Track {
   Step steps[STEP_COUNT];
   bool mute;
   uint8_t volume;  // 0~127
+  int8_t pitchOffset;  // -16, -8, 0, +8, +16 scale-degree transpose
   OscType osc;
 };
 

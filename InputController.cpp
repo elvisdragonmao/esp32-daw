@@ -60,12 +60,12 @@ void InputController::handleDirEvent(Dir4 dir) {
 
   else if (mode == MODE_TRACK) {
     if (dir == DIR_UP) {
-      trackMenuIndex = (trackMenuIndex == 0) ? 3 : trackMenuIndex - 1;
+      trackMenuIndex = (trackMenuIndex == 0) ? 4 : trackMenuIndex - 1;
       setDirtyMenuNoLock();
     }
 
     else if (dir == DIR_DOWN) {
-      trackMenuIndex = (trackMenuIndex + 1) % 4;
+      trackMenuIndex = (trackMenuIndex + 1) % 5;
       setDirtyMenuNoLock();
     }
 
@@ -105,6 +105,11 @@ void InputController::handleDirEvent(Dir4 dir) {
         oscMenuIndex = tracks[selectedTrack].osc;
         setDirtyFullNoLock();
       }
+
+      else if (trackMenuIndex == 4) {
+        screenMode = MODE_TRACK_PITCH;
+        setDirtyFullNoLock();
+      }
     }
   }
 
@@ -138,6 +143,24 @@ void InputController::handleDirEvent(Dir4 dir) {
 
     else if (dir == DIR_LEFT || dir == DIR_RIGHT) {
       screenMode = MODE_TRACK;
+      setDirtyFullNoLock();
+    }
+  }
+
+  else if (mode == MODE_TRACK_PITCH) {
+    if (dir == DIR_UP) {
+      tracks[selectedTrack].pitchOffset = clampInt(tracks[selectedTrack].pitchOffset + 8, -16, 16);
+      setDirtyStatusNoLock();
+    }
+
+    else if (dir == DIR_DOWN) {
+      tracks[selectedTrack].pitchOffset = clampInt(tracks[selectedTrack].pitchOffset - 8, -16, 16);
+      setDirtyStatusNoLock();
+    }
+
+    else if (dir == DIR_LEFT || dir == DIR_RIGHT) {
+      screenMode = MODE_TRACK;
+      trackMenuIndex = 4;
       setDirtyFullNoLock();
     }
   }

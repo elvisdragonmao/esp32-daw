@@ -159,7 +159,7 @@ int32_t AudioEngine::envelopeQ15(Voice &v) {
   return 0;
 }
 
-void AudioEngine::triggerVoice(uint8_t track, int8_t note, OscType osc, uint32_t samplesPerStep) {
+void AudioEngine::triggerVoice(uint8_t track, int8_t note, OscType osc, int8_t pitchOffset, uint32_t samplesPerStep) {
   if (track >= TRACK_COUNT || note < 0 || note > 7) return;
 
   voices[track].active = true;
@@ -177,7 +177,20 @@ void AudioEngine::triggerVoice(uint8_t track, int8_t note, OscType osc, uint32_t
     return;
   }
 
-  voices[track].inc = freqToInc(NOTE_FREQS[note]);
+  uint32_t inc = freqToInc(NOTE_FREQS[note]);
+  int8_t octaves = clampInt(pitchOffset, -16, 16) / 8;
+
+  while (octaves > 0) {
+    inc <<= 1;
+    octaves--;
+  }
+
+  while (octaves < 0) {
+    inc >>= 1;
+    octaves++;
+  }
+
+  voices[track].inc = inc;
 
   int32_t gate = (int32_t)(samplesPerStep * 75 / 100);
   if (gate < 1) gate = 1;

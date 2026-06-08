@@ -182,8 +182,25 @@
       min-width: 0;
       padding: 18px;
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto auto 1fr auto;
       gap: 16px;
+    }
+
+    .song-bar {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(180px, 260px) auto auto auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .song-bar input {
+      width: 100%;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #11151a;
+      color: var(--text);
+      padding: 0 10px;
     }
 
     .controls {
@@ -316,8 +333,8 @@
 
     .track-main {
       display: grid;
-      grid-template-columns: 54px 86px 42px;
-      gap: 8px;
+      grid-template-columns: 26px 58px 50px 32px;
+      gap: 6px;
       align-items: center;
     }
 
@@ -327,8 +344,8 @@
     }
 
     .mute {
-      width: 42px;
-      min-width: 42px;
+      width: 32px;
+      min-width: 32px;
       min-height: 34px;
       color: var(--muted);
     }
@@ -548,6 +565,10 @@
         grid-template-columns: 1fr 1fr;
       }
 
+      .song-bar {
+        grid-template-columns: 1fr 1fr;
+      }
+
       .step-header,
       .track-row {
         grid-template-columns: 190px repeat(var(--steps), 36px);
@@ -566,6 +587,10 @@
 
     @media (max-width: 520px) {
       .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .song-bar {
         grid-template-columns: 1fr;
       }
 
@@ -616,6 +641,23 @@
 
     <main class="main">
       <section class="composer" aria-label="Composer">
+        <div class="song-bar">
+          <input id="songNameInput" type="text" maxlength="48" value="Demo Song" aria-label="Song name">
+          <select id="savedSongSelect" aria-label="Saved songs"></select>
+          <button class="text-button primary" id="saveSongBtn" type="button" title="Save song">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path></svg>
+            Save
+          </button>
+          <button class="text-button" id="newSongBtn" type="button" title="New song">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+            New
+          </button>
+          <button class="text-button danger" id="deleteSongBtn" type="button" title="Delete saved song">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6v14"></path><path d="M16 6v14"></path><path d="M5 6l1 16h12l1-16"></path><path d="M9 3h6"></path></svg>
+            Delete
+          </button>
+        </div>
+
         <div class="controls">
           <div class="field">
             <label for="bpmInput"><span>BPM</span><output id="bpmValue">120</output></label>
@@ -691,8 +733,12 @@
     const NOTE_NAMES = ["C", "D", "E", "F", "G", "A", "B", "C+"];
     const DRUM_NAMES = ["Kick", "Snare", "Hat", "Tom"];
     const NOTE_FREQS = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+    const SONG_LIBRARY_KEY = "pocketDawSongs.v1";
+    const SONG_DRAFT_KEY = "pocketDawDraft.v1";
 
     const state = {
+      songName: "Demo Song",
+      currentSongId: "",
       bpm: 120,
       bars: 4,
       masterVolume: 100,
@@ -712,12 +758,15 @@
     const statusEl = document.getElementById("status");
     const playBtn = document.getElementById("playBtn");
     const codeModal = document.getElementById("codeModal");
+    const songNameInput = document.getElementById("songNameInput");
+    const savedSongSelect = document.getElementById("savedSongSelect");
 
     function emptyTrack(index) {
       return {
         name: "T" + (index + 1),
         osc: OSC[Math.min(index, OSC.length - 1)].id,
         volume: 100,
+        pitchOffset: 0,
         mute: false,
         selectedNote: index === 3 ? 0 : index,
         steps: Array.from({ length: STEP_COUNT }, () => ({ note: -1, velocity: 0 }))
@@ -726,7 +775,170 @@
 
     function initState() {
       state.tracks = Array.from({ length: TRACK_COUNT }, (_, index) => emptyTrack(index));
-      loadDemo();
+      if (!restoreDraft()) {
+        loadDemo();
+      }
+    }
+
+    function readSongLibrary() {
+      try {
+        const raw = localStorage.getItem(SONG_LIBRARY_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (parsed && Array.isArray(parsed.songs)) return parsed;
+      } catch (error) {
+        // Ignore corrupt browser storage and continue with an empty library.
+      }
+
+      return { songs: [] };
+    }
+
+    function writeSongLibrary(library) {
+      localStorage.setItem(SONG_LIBRARY_KEY, JSON.stringify(library));
+    }
+
+    function songSnapshot() {
+      return {
+        songName: state.songName,
+        bpm: state.bpm,
+        bars: state.bars,
+        masterVolume: state.masterVolume,
+        velocity: state.velocity,
+        tracks: state.tracks.map((track) => ({
+          name: track.name,
+          osc: track.osc,
+          volume: track.volume,
+          pitchOffset: track.pitchOffset,
+          mute: track.mute,
+          selectedNote: track.selectedNote,
+          steps: track.steps.map((step) => ({ note: step.note, velocity: step.velocity }))
+        }))
+      };
+    }
+
+    function applySongData(data) {
+      state.songName = String(data.songName || "Untitled");
+      state.bpm = clamp(data.bpm || 120, 40, 240);
+      state.bars = clamp(data.bars || 4, 1, 8);
+      state.masterVolume = clamp(data.masterVolume || 100, 0, 127);
+      state.velocity = clamp(data.velocity || 100, 1, 127);
+      state.selectedTrack = 0;
+      state.selectedStep = 0;
+
+      state.tracks = Array.from({ length: TRACK_COUNT }, (_, index) => {
+        const source = data.tracks && data.tracks[index] ? data.tracks[index] : {};
+        const track = emptyTrack(index);
+        track.name = String(source.name || track.name);
+        track.osc = oscById(source.osc).id;
+        track.volume = clamp(source.volume ?? 100, 0, 127);
+        track.pitchOffset = clamp(source.pitchOffset ?? 0, -16, 16);
+        track.pitchOffset = Math.round(track.pitchOffset / 8) * 8;
+        track.mute = Boolean(source.mute);
+        track.selectedNote = clamp(source.selectedNote ?? track.selectedNote, 0, track.osc === "OSC_DRUM" ? 3 : 7);
+
+        for (let s = 0; s < STEP_COUNT; s++) {
+          const sourceStep = source.steps && source.steps[s] ? source.steps[s] : {};
+          track.steps[s].note = clamp(sourceStep.note ?? -1, -1, 7);
+          track.steps[s].velocity = track.steps[s].note >= 0 ? clamp(sourceStep.velocity ?? state.velocity, 0, 127) : 0;
+        }
+
+        sanitizeTrackNotes(track);
+        return track;
+      });
+    }
+
+    function persistDraft() {
+      const payload = {
+        currentSongId: state.currentSongId,
+        data: songSnapshot()
+      };
+      localStorage.setItem(SONG_DRAFT_KEY, JSON.stringify(payload));
+    }
+
+    function restoreDraft() {
+      try {
+        const raw = localStorage.getItem(SONG_DRAFT_KEY);
+        if (!raw) return false;
+        const draft = JSON.parse(raw);
+        if (!draft || !draft.data) return false;
+        state.currentSongId = String(draft.currentSongId || "");
+        applySongData(draft.data);
+        setStatus("Draft restored");
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function saveCurrentSong() {
+      const name = state.songName.trim() || "Untitled";
+      state.songName = name;
+
+      const library = readSongLibrary();
+      const now = Date.now();
+      const id = state.currentSongId || "song-" + now;
+      const record = {
+        id,
+        name,
+        updatedAt: now,
+        data: songSnapshot()
+      };
+      const existingIndex = library.songs.findIndex((song) => song.id === id);
+
+      if (existingIndex >= 0) {
+        library.songs[existingIndex] = record;
+      } else {
+        library.songs.push(record);
+      }
+
+      library.songs.sort((a, b) => b.updatedAt - a.updatedAt);
+      state.currentSongId = id;
+      writeSongLibrary(library);
+      persistDraft();
+      syncSongControls();
+      setStatus("Saved: " + name);
+    }
+
+    function loadSong(id) {
+      const library = readSongLibrary();
+      const record = library.songs.find((song) => song.id === id);
+      if (!record) return;
+
+      state.currentSongId = record.id;
+      applySongData(record.data);
+      persistDraft();
+      setStatus("Loaded: " + record.name);
+      render();
+    }
+
+    function deleteCurrentSong() {
+      if (!state.currentSongId) {
+        setStatus("No saved song selected");
+        return;
+      }
+
+      const library = readSongLibrary();
+      const deleted = library.songs.find((song) => song.id === state.currentSongId);
+      library.songs = library.songs.filter((song) => song.id !== state.currentSongId);
+      writeSongLibrary(library);
+      state.currentSongId = "";
+      persistDraft();
+      syncSongControls();
+      setStatus(deleted ? "Deleted: " + deleted.name : "Deleted");
+    }
+
+    function newSong() {
+      state.songName = "Untitled";
+      state.currentSongId = "";
+      state.bpm = 120;
+      state.bars = 4;
+      state.masterVolume = 100;
+      state.velocity = 100;
+      state.selectedTrack = 0;
+      state.selectedStep = 0;
+      state.tracks = Array.from({ length: TRACK_COUNT }, (_, index) => emptyTrack(index));
+      persistDraft();
+      setStatus("New song");
+      render();
     }
 
     function clamp(value, min, max) {
@@ -777,6 +989,7 @@
 
     function render(options = {}) {
       syncControls();
+      syncSongControls();
       gridEl.style.setProperty("--steps", activeSteps());
 
       const parts = [];
@@ -800,6 +1013,12 @@
         for (const osc of OSC) {
           parts.push('<option value="' + osc.id + '"' + (track.osc === osc.id ? " selected" : "") + '>' + osc.label + '</option>');
         }
+        parts.push('</select>');
+        parts.push('<select data-action="pitch" data-track="' + t + '" title="Pitch offset">');
+        [-16, -8, 0, 8, 16].forEach((offset) => {
+          const label = offset > 0 ? "+" + offset : String(offset);
+          parts.push('<option value="' + offset + '"' + (track.pitchOffset === offset ? " selected" : "") + '>' + label + '</option>');
+        });
         parts.push('</select>');
         parts.push('<button class="mute' + (track.mute ? " active" : "") + '" data-action="mute" data-track="' + t + '" type="button" title="Mute">M</button>');
         parts.push('</div>');
@@ -837,6 +1056,10 @@
 
       if (options.focusCell) {
         requestAnimationFrame(() => focusSelectedCell());
+      }
+
+      if (!playing && !options.skipPersist) {
+        persistDraft();
       }
     }
 
@@ -892,6 +1115,7 @@
       step.note = note;
       step.velocity = state.velocity;
       track.selectedNote = note;
+      previewNote(state.selectedTrack, note, step.velocity);
       advanceSelectionRight();
       render({ focusCell: true });
     }
@@ -909,6 +1133,23 @@
       setLinkedValue("bars", state.bars);
       setLinkedValue("master", state.masterVolume);
       setLinkedValue("velocity", state.velocity);
+    }
+
+    function syncSongControls() {
+      if (document.activeElement !== songNameInput) {
+        songNameInput.value = state.songName;
+      }
+
+      const library = readSongLibrary();
+      const options = ['<option value="">Unsaved draft</option>'];
+
+      for (const song of library.songs) {
+        const selected = song.id === state.currentSongId ? " selected" : "";
+        options.push('<option value="' + song.id + '"' + selected + '>' + song.name + '</option>');
+      }
+
+      savedSongSelect.innerHTML = options.join("");
+      savedSongSelect.value = state.currentSongId;
     }
 
     function setLinkedValue(key, value) {
@@ -941,6 +1182,7 @@
       lines.push("  for (uint8_t t = 0; t < TRACK_COUNT; t++) {");
       lines.push("    tracks[t].mute = false;");
       lines.push("    tracks[t].volume = 100;");
+      lines.push("    tracks[t].pitchOffset = 0;");
       lines.push("    tracks[t].osc = OSC_SINE;");
       lines.push("");
       lines.push("    for (uint8_t s = 0; s < STEP_COUNT; s++) {");
@@ -964,6 +1206,7 @@
         lines.push("  // " + track.name + ": " + oscById(track.osc).label);
         lines.push("  tracks[" + t + "].mute = " + (track.mute ? "true" : "false") + ";");
         lines.push("  tracks[" + t + "].volume = " + track.volume + ";");
+        lines.push("  tracks[" + t + "].pitchOffset = " + track.pitchOffset + ";");
         lines.push("  tracks[" + t + "].osc = " + track.osc + ";");
         lines.push("  voices[" + t + "].osc = " + track.osc + ";");
 
@@ -986,6 +1229,8 @@
     }
 
     function loadDemo() {
+      state.songName = "Demo Song";
+      state.currentSongId = "";
       state.bpm = 120;
       state.bars = 4;
       state.masterVolume = 100;
@@ -1044,6 +1289,22 @@
         step.note = track.selectedNote;
         step.velocity = state.velocity;
       }
+      return step.note;
+    }
+
+    function previewNote(trackIndex, note, velocity = state.velocity) {
+      if (note < 0) return;
+
+      ensureAudio().then(() => {
+        const track = state.tracks[trackIndex];
+        const now = audioCtx.currentTime;
+
+        if (track.osc === "OSC_DRUM") {
+          playDrum(now, note & 3, track.volume, velocity);
+        } else {
+          playTone(now, track, note, velocity);
+        }
+      });
     }
 
     function openCodeModal() {
@@ -1091,17 +1352,19 @@
         audioCtx = new Context();
       }
       if (audioCtx.state === "suspended") {
-        audioCtx.resume();
+        return audioCtx.resume();
       }
+      return Promise.resolve();
     }
 
     function startPreview() {
-      ensureAudio();
-      playing = true;
-      playStep = -1;
-      scheduleNextStep();
-      render();
-      setStatus("Preview playing");
+      ensureAudio().then(() => {
+        playing = true;
+        playStep = -1;
+        scheduleNextStep();
+        render();
+        setStatus("Preview playing");
+      });
     }
 
     function stopPreview() {
@@ -1144,7 +1407,7 @@
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = oscById(track.osc).wave;
-      osc.frequency.setValueAtTime(NOTE_FREQS[note] || NOTE_FREQS[0], time);
+      osc.frequency.setValueAtTime((NOTE_FREQS[note] || NOTE_FREQS[0]) * Math.pow(2, track.pitchOffset / 8), time);
       gain.gain.setValueAtTime(0, time);
       gain.gain.linearRampToValueAtTime(outputGain(track.volume, velocity, 0.18), time + 0.008);
       gain.gain.setValueAtTime(outputGain(track.volume, velocity, 0.18), time + 0.12);
@@ -1203,11 +1466,13 @@
 
       if (action === "toggle-step") {
         selectCell(trackIndex, Number(target.dataset.step));
-        toggleStep(trackIndex, state.selectedStep);
+        const note = toggleStep(trackIndex, state.selectedStep);
+        previewNote(trackIndex, note);
         render({ focusCell: true });
         return;
       } else if (action === "select-note") {
         track.selectedNote = Number(target.dataset.note);
+        previewNote(trackIndex, track.selectedNote);
       } else if (action === "mute") {
         track.mute = !track.mute;
       }
@@ -1216,12 +1481,17 @@
     });
 
     gridEl.addEventListener("change", (event) => {
-      const target = event.target.closest("[data-action='osc']");
+      const target = event.target.closest("[data-action='osc'], [data-action='pitch']");
       if (!target) return;
 
       const track = state.tracks[Number(target.dataset.track)];
-      track.osc = target.value;
-      sanitizeTrackNotes(track);
+      if (target.dataset.action === "osc") {
+        track.osc = target.value;
+        sanitizeTrackNotes(track);
+      } else {
+        track.pitchOffset = clamp(target.value, -16, 16);
+        track.pitchOffset = Math.round(track.pitchOffset / 8) * 8;
+      }
       render();
     });
 
@@ -1311,6 +1581,21 @@
       state.velocity = clamp(value, 1, 127);
     });
 
+    songNameInput.addEventListener("input", () => {
+      state.songName = songNameInput.value;
+      persistDraft();
+    });
+    savedSongSelect.addEventListener("change", () => {
+      if (savedSongSelect.value) {
+        loadSong(savedSongSelect.value);
+      }
+    });
+    document.getElementById("saveSongBtn").addEventListener("click", saveCurrentSong);
+    document.getElementById("newSongBtn").addEventListener("click", () => {
+      stopPreview();
+      newSong();
+    });
+    document.getElementById("deleteSongBtn").addEventListener("click", deleteCurrentSong);
     document.getElementById("demoBtn").addEventListener("click", () => {
       stopPreview();
       loadDemo();

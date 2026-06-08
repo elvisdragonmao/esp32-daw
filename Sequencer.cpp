@@ -11,11 +11,13 @@ void Sequencer::advanceFromAudio(uint32_t samplesPerStep) {
 
   int8_t notesToTrigger[TRACK_COUNT];
   OscType oscToTrigger[TRACK_COUNT];
+  int8_t pitchOffsetToUse[TRACK_COUNT];
   bool muteToUse[TRACK_COUNT];
 
   for (uint8_t t = 0; t < TRACK_COUNT; t++) {
     notesToTrigger[t] = -1;
     oscToTrigger[t] = OSC_SINE;
+    pitchOffsetToUse[t] = 0;
     muteToUse[t] = true;
   }
 
@@ -72,6 +74,7 @@ void Sequencer::advanceFromAudio(uint32_t samplesPerStep) {
   for (uint8_t t = 0; t < TRACK_COUNT; t++) {
     notesToTrigger[t] = tracks[t].steps[newStep].note;
     oscToTrigger[t] = tracks[t].osc;
+    pitchOffsetToUse[t] = tracks[t].pitchOffset;
     muteToUse[t] = tracks[t].mute;
   }
 
@@ -79,7 +82,7 @@ void Sequencer::advanceFromAudio(uint32_t samplesPerStep) {
 
   for (uint8_t t = 0; t < TRACK_COUNT; t++) {
     if (!muteToUse[t] && notesToTrigger[t] >= 0) {
-      audioEngine.triggerVoice(t, notesToTrigger[t], oscToTrigger[t], samplesPerStep);
+      audioEngine.triggerVoice(t, notesToTrigger[t], oscToTrigger[t], pitchOffsetToUse[t], samplesPerStep);
     }
   }
 }

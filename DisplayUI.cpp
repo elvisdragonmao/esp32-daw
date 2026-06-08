@@ -186,6 +186,7 @@ void DisplayUI::drawLeftPanel() {
     drawMenuItem(1, "Record", trackMenuIndex == 1);
     drawMenuItem(2, "Vol", trackMenuIndex == 2);
     drawMenuItem(3, "OSC", trackMenuIndex == 3);
+    drawMenuItem(4, "Pitch", trackMenuIndex == 4);
 
     char buf[10];
     snprintf(buf, sizeof(buf), "T%d", selectedTrack + 1);
@@ -206,6 +207,16 @@ void DisplayUI::drawLeftPanel() {
     drawMenuItem(0, buf, true);
     drawMenuItem(2, "Up +", false);
     drawMenuItem(3, "Dn -", false);
+    drawMenuItem(6, "L Back", false);
+  }
+
+  else if (mode == MODE_TRACK_PITCH) {
+    char buf[10];
+    snprintf(buf, sizeof(buf), "T%dPit", selectedTrack + 1);
+
+    drawMenuItem(0, buf, true);
+    drawMenuItem(2, "Up +8", false);
+    drawMenuItem(3, "Dn -8", false);
     drawMenuItem(6, "L Back", false);
   }
 
@@ -292,7 +303,7 @@ void DisplayUI::drawSelectedTrackOutline() {
   ScreenMode mode = screenMode;
 
   if (
-    mode == MODE_TRACK || mode == MODE_TRACK_VOL || mode == MODE_OSC || mode == MODE_REC_ARMED || mode == MODE_RECORDING) {
+    mode == MODE_TRACK || mode == MODE_TRACK_VOL || mode == MODE_TRACK_PITCH || mode == MODE_OSC || mode == MODE_REC_ARMED || mode == MODE_RECORDING) {
     uint8_t t = selectedTrack;
 
     if (mode == MODE_REC_ARMED || mode == MODE_RECORDING) {
@@ -371,6 +382,18 @@ void DisplayUI::drawStatus() {
 
     snprintf(buf, sizeof(buf), "%03d", tracks[selectedTrack].volume);
     tft.setCursor(GRID_X + 104, STATUS_Y + 13);
+    tft.print(buf);
+    return;
+  }
+
+  if (mode == MODE_TRACK_PITCH) {
+    tft.setCursor(GRID_X, STATUS_Y + 2);
+    snprintf(buf, sizeof(buf), "T%d Pitch", selectedTrack + 1);
+    tft.print(buf);
+
+    tft.setCursor(GRID_X, STATUS_Y + 13);
+    tft.setTextColor(COL_SELECT, COL_PANEL_DARK);
+    snprintf(buf, sizeof(buf), "%+d degree", tracks[selectedTrack].pitchOffset);
     tft.print(buf);
     return;
   }

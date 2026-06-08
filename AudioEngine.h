@@ -10,7 +10,7 @@ class AudioEngine {
 public:
   void begin();
   void task();
-  void triggerVoice(uint8_t track, int8_t note, OscType osc, uint32_t samplesPerStep);
+  void triggerVoice(uint8_t track, int8_t note, OscType osc, int8_t pitchOffset, uint32_t samplesPerStep);
   int16_t renderSample();
 
 private:

@@ -158,6 +158,7 @@ void initTracks() {
   for (uint8_t t = 0; t < TRACK_COUNT; t++) {
     tracks[t].mute = false;
     tracks[t].volume = 100;
+    tracks[t].pitchOffset = 0;
     tracks[t].osc = (OscType)t;
 
     for (uint8_t s = 0; s < STEP_COUNT; s++) {
