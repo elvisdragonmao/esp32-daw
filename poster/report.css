@@ -64,6 +64,9 @@ dd {
 
 .sheet {
   position: relative;
+  display: grid;
+  grid-template-rows: 158mm 24mm 374mm 22mm;
+  align-content: start;
   width: var(--paper-w);
   height: var(--paper-h);
   overflow: hidden;
@@ -119,15 +122,15 @@ dd {
 }
 
 .trim-bottom {
-  bottom: 15mm;
+  bottom: 8mm;
 }
 
 .hero {
   position: relative;
   display: grid;
   grid-template-columns: 48% 52%;
-  min-height: 178mm;
-  padding: 27mm 20mm 9mm;
+  min-height: 0;
+  padding: 24mm 20mm 4mm;
 }
 
 .hero::before {
@@ -143,53 +146,53 @@ dd {
 .hero-copy {
   position: relative;
   z-index: 2;
-  align-self: end;
-  padding-bottom: 9mm;
+  align-self: center;
+  padding-bottom: 0;
 }
 
 .kicker {
   color: var(--cyan);
   font-family: "DIN Alternate", "Arial Narrow", system-ui, sans-serif;
-  font-size: 5.1mm;
+  font-size: 4.3mm;
   font-weight: 700;
-  letter-spacing: 0.6mm;
+  letter-spacing: 0.45mm;
   line-height: 1;
   text-transform: uppercase;
 }
 
 h1 {
-  margin-top: 8mm;
+  margin-top: 6mm;
   color: #ffffff;
   font-family: "Arial Black", Impact, "Noto Sans TC", sans-serif;
-  font-size: 37mm;
+  font-size: 30mm;
   font-weight: 900;
   letter-spacing: 0;
-  line-height: 0.82;
+  line-height: 0.84;
   text-transform: uppercase;
 }
 
 .subtitle {
-  margin-top: 5mm;
+  margin-top: 4mm;
   color: var(--lime);
-  font-size: 10mm;
+  font-size: 8.2mm;
   font-weight: 800;
-  letter-spacing: 0.4mm;
+  letter-spacing: 0.25mm;
 }
 
 .lead {
-  max-width: 170mm;
-  margin-top: 8mm;
+  max-width: 174mm;
+  margin-top: 5.5mm;
   color: #dce5e0;
-  font-size: 5.1mm;
+  font-size: 4mm;
   font-weight: 450;
-  line-height: 1.65;
+  line-height: 1.48;
 }
 
 .hero-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 2.5mm;
-  margin-top: 9mm;
+  gap: 2mm;
+  margin-top: 5.5mm;
 }
 
 .hero-tags span,
@@ -198,35 +201,35 @@ h1 {
   background: rgba(7, 12, 14, 0.76);
   color: #e9fbff;
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 3.35mm;
+  font-size: 3.3mm;
   font-weight: 700;
   line-height: 1;
-  padding: 2mm 3mm;
+  padding: 1.7mm 2.5mm;
   text-transform: uppercase;
 }
 
 .hero-visual {
   position: relative;
-  min-height: 150mm;
+  min-height: 0;
 }
 
 .hero-visual::before {
   position: absolute;
   content: "";
-  right: 6mm;
-  bottom: 18mm;
-  width: 159mm;
-  height: 64mm;
-  background: linear-gradient(90deg, rgba(255, 150, 0, 0.24), rgba(80, 210, 240, 0.08));
+  right: 13mm;
+  bottom: 8mm;
+  width: 122mm;
+  height: 40mm;
+  background: linear-gradient(90deg, rgba(255, 150, 0, 0.09), rgba(80, 210, 240, 0.08));
   clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
   border: 0.35mm solid rgba(255, 255, 255, 0.1);
 }
 
 .hero-visual > img {
   position: absolute;
-  right: -4mm;
-  bottom: 4mm;
-  width: 176mm;
+  right: 8mm;
+  bottom: 0;
+  width: 130mm;
   filter: drop-shadow(0 20mm 18mm rgba(0, 0, 0, 0.55));
 }
 
@@ -263,40 +266,43 @@ h1 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 4mm;
-  padding: 0 20mm 8mm;
+  align-self: stretch;
+  padding: 0 20mm;
 }
 
 .metrics article {
-  min-height: 28mm;
+  min-height: 0;
   border-top: 0.45mm solid var(--line);
   border-bottom: 0.45mm solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
-  padding: 4mm 4mm 3mm;
+  padding: 3mm 4mm 2mm;
 }
 
 .metrics strong {
   display: block;
-  margin-top: 1mm;
+  margin-top: 0.6mm;
   color: #ffffff;
   font-family: "Arial Black", Impact, sans-serif;
-  font-size: 12mm;
+  font-size: 9.8mm;
   letter-spacing: 0;
   line-height: 1;
 }
 
 .metrics p {
-  margin-top: 1.8mm;
+  margin-top: 1.1mm;
   color: #cbd4d0;
-  font-size: 3.45mm;
-  line-height: 1.32;
+  font-size: 3mm;
+  line-height: 1.22;
 }
 
 .poster-grid {
   display: grid;
   grid-template-columns: 108mm 132mm 130mm;
-  grid-template-rows: 68mm 104mm 75mm 70mm;
-  gap: 5mm;
-  padding: 0 20mm 14mm;
+  grid-template-rows: 76mm 124mm 84mm 74mm;
+  gap: 4mm;
+  align-self: start;
+  padding: 0 20mm;
+  margin-top: 4mm;
 }
 
 .panel {
@@ -307,7 +313,7 @@ h1 {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.055), transparent 38%),
     var(--panel);
-  padding: 6mm;
+  padding: 5mm;
 }
 
 .panel::before {
@@ -335,20 +341,20 @@ h1 {
 .panel-heading {
   display: flex;
   align-items: baseline;
-  gap: 3mm;
+  gap: 2.2mm;
   margin-bottom: 4mm;
 }
 
 .panel-heading span {
   color: var(--orange);
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 3.4mm;
+  font-size: 3mm;
   font-weight: 800;
 }
 
 h2 {
   color: #fff;
-  font-size: 6.2mm;
+  font-size: 5.45mm;
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1.08;
@@ -357,7 +363,7 @@ h2 {
 h3 {
   color: var(--cyan);
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 3.5mm;
+  font-size: 3.3mm;
   line-height: 1;
   text-transform: uppercase;
 }
@@ -366,17 +372,17 @@ h3 {
 .tight-list,
 .spec-list dd {
   color: #d7dfdb;
-  font-size: 3.55mm;
-  line-height: 1.56;
+  font-size: 3.15mm;
+  line-height: 1.42;
 }
 
 .tight-list {
-  margin: 4mm 0 0;
+  margin: 3mm 0 0;
   padding-left: 5mm;
 }
 
 .tight-list li + li {
-  margin-top: 1.5mm;
+  margin-top: 1mm;
 }
 
 .concept {
@@ -391,7 +397,12 @@ h3 {
 
 .fabrication-body {
   display: grid;
-  gap: 4mm;
+  gap: 2.5mm;
+}
+
+.fabrication p {
+  font-size: 3.3mm;
+  line-height: 1.38;
 }
 
 .process-line {
@@ -425,14 +436,14 @@ h3 {
 .ui-panel {
   grid-column: 2 / span 2;
   grid-row: 2 / span 2;
-  padding-bottom: 5mm;
+  padding-bottom: 4mm;
 }
 
 .main-ui {
   position: relative;
   border: 0.55mm solid rgba(80, 210, 240, 0.42);
   background: #000;
-  padding: 5mm;
+  padding: 3mm;
 }
 
 .main-ui img {
@@ -442,25 +453,25 @@ h3 {
 
 figcaption {
   color: var(--muted);
-  font-size: 3mm;
-  line-height: 1.4;
+  font-size: 2.6mm;
+  line-height: 1.3;
 }
 
 .main-ui figcaption {
-  margin-top: 3mm;
+  margin-top: 2mm;
 }
 
 .ui-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 3mm;
-  margin-top: 5mm;
+  gap: 2.5mm;
+  margin-top: 3mm;
 }
 
 .ui-strip figure {
   border: 0.35mm solid rgba(255, 255, 255, 0.16);
   background: #050707;
-  padding: 2.2mm;
+  padding: 1.5mm;
 }
 
 .ui-strip img {
@@ -469,10 +480,10 @@ figcaption {
 }
 
 .ui-strip figcaption {
-  margin-top: 1.8mm;
+  margin-top: 1.2mm;
   color: #e9fbff;
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 2.9mm;
+  font-size: 2.45mm;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
@@ -486,25 +497,25 @@ figcaption {
 .interaction-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4mm;
+  gap: 3mm;
 }
 
 .interaction-grid p {
-  margin-top: 2mm;
-  font-size: 3.25mm;
-  line-height: 1.48;
+  margin-top: 1.5mm;
+  font-size: 2.85mm;
+  line-height: 1.38;
 }
 
 .note-map {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 2mm;
-  margin-top: 4mm;
+  margin-top: 3mm;
 }
 
 .note-map span {
   display: grid;
-  min-height: 9mm;
+  min-height: 8mm;
   place-items: center;
   border-color: rgba(255, 150, 0, 0.6);
   color: #fff5e5;
@@ -516,26 +527,37 @@ figcaption {
   grid-row: 4;
 }
 
+.architecture-copy {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4mm;
+}
+
+.architecture-copy p {
+  font-size: 3.3mm;
+  line-height: 1.38;
+}
+
 .signal-flow {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 2mm;
-  margin-bottom: 4mm;
+  gap: 1.5mm;
+  margin-bottom: 2.5mm;
 }
 
 .signal-flow span {
   position: relative;
   display: grid;
-  min-height: 15mm;
+  min-height: 11mm;
   align-items: center;
   border: 0.35mm solid rgba(80, 210, 240, 0.45);
   background: rgba(80, 210, 240, 0.08);
   color: #f4fcff;
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 2.7mm;
+  font-size: 2.15mm;
   font-weight: 800;
   line-height: 1.18;
-  padding: 2mm;
+  padding: 1.5mm;
   text-align: center;
   text-transform: uppercase;
 }
@@ -558,12 +580,12 @@ figcaption {
 
 .circuit figure {
   display: grid;
-  gap: 2.5mm;
+  gap: 1.8mm;
 }
 
 .circuit img {
   width: 100%;
-  height: 38mm;
+  height: 35mm;
   object-fit: contain;
   border: 0.35mm solid rgba(255, 255, 255, 0.14);
   background: #e8ece6;
@@ -571,67 +593,76 @@ figcaption {
 }
 
 .circuit figcaption {
-  font-size: 2.75mm;
+  font-size: 2.55mm;
 }
 
 .details {
   grid-column: 3;
   grid-row: 4;
+  padding: 5mm;
+}
+
+.details .panel-heading {
+  margin-bottom: 4mm;
+}
+
+.details p {
+  font-size: 2.85mm;
+  line-height: 1.36;
+  margin-bottom: 2mm;
 }
 
 .spec-list {
   display: grid;
-  gap: 2.1mm;
+  gap: 1mm;
 }
 
 .spec-list div {
   display: grid;
-  grid-template-columns: 31mm 1fr;
-  gap: 3mm;
+  grid-template-columns: 27mm 1fr;
+  gap: 2mm;
   border-bottom: 0.25mm solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 1.7mm;
+  padding-bottom: 1.1mm;
 }
 
 .spec-list dt {
   color: var(--orange);
-  font-size: 3.2mm;
+  font-size: 2.65mm;
   font-weight: 900;
 }
 
 .spec-list dd {
-  font-size: 3.05mm;
-  line-height: 1.32;
+  font-size: 2.45mm;
+  line-height: 1.18;
 }
 
 .footer {
-  position: absolute;
-  left: 20mm;
-  right: 20mm;
-  bottom: 21mm;
+  position: relative;
   display: flex;
-  align-items: end;
+  align-items: start;
   justify-content: space-between;
+  margin: 0 20mm;
   border-top: 0.35mm solid rgba(255, 255, 255, 0.16);
-  padding-top: 4mm;
+  padding-top: 3mm;
 }
 
 .footer strong {
   display: block;
   color: #fff;
-  font-size: 4.6mm;
+  font-size: 3.9mm;
   line-height: 1.2;
 }
 
 .footer span {
-  margin-top: 1.2mm;
+  margin-top: 0.8mm;
   color: #a9b5b1;
-  font-size: 2.8mm;
+  font-size: 2.45mm;
 }
 
 .footer-code {
   color: var(--cyan);
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 3.2mm;
+  font-size: 2.75mm;
   font-weight: 800;
   text-transform: uppercase;
 }
