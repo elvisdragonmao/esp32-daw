@@ -193,20 +193,22 @@ int16_t AudioEngine::renderSample() {
     Voice &v = voices[t];
 
     if (!v.active) continue;
-    if (tracks[t].mute) continue;
 
-    int16_t osc = renderOscillator(v);
     int32_t env = envelopeQ15(v);
+    bool muted = tracks[t].mute;
 
-    if (env <= 0) continue;
+    if (env > 0 && !muted) {
+      int16_t osc = renderOscillator(v);
+      int32_t sample = ((int32_t)osc * env) >> 15;
+      sample = (sample * tracks[t].volume) / 127;
 
-    int32_t sample = ((int32_t)osc * env) >> 15;
-    sample = (sample * tracks[t].volume) / 127;
+      mix += sample;
+    }
 
-    mix += sample;
-
-    v.phase += v.inc;
-    v.ageSamples++;
+    if (v.active) {
+      v.phase += v.inc;
+      v.ageSamples++;
+    }
   }
 
   mix = (mix * localMaster) / 127;
